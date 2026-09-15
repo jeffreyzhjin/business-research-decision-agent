@@ -1,72 +1,102 @@
-# Evidence-Grounded Business Research Agent
+# 商业研究决策助手
 
-An AI-powered research and decision-support application that transforms a business question into a structured research plan, searches for external evidence, evaluates source quality, and produces a cited decision brief.
+一个基于可追溯证据的商业研究与决策支持应用。用户输入开放式商业问题后，系统会生成结构化研究计划、检索外部证据、评估来源质量，并输出带来源编号的中文决策简报。
 
-## Live Demo
+## 在线演示
 
-[Open the live application](https://business-research-decision-agent.vercel.app)
+[打开在线应用](https://business-research-decision-agent.vercel.app)
 
-## Overview
+> 说明：应用界面和研究结果默认使用简体中文。`vercel.app` 域名在部分中国大陆网络中可能访问不稳定。
 
-Business decisions often require information from multiple sources, but search results alone do not provide a reliable recommendation. This project implements an end-to-end research workflow that separates planning, evidence collection, evidence review, and decision synthesis.
+## 界面展示
 
-The system is designed to avoid unsupported conclusions by:
+### 步骤 1：输入商业问题与决策背景
 
-- generating focused research questions and search queries;
-- collecting current web evidence through Tavily;
-- evaluating source quality and relevance separately;
-- attaching source identifiers to evidence-backed findings;
-- lowering confidence when evidence is incomplete or unreliable;
-- using rule-based fallbacks when an AI review step fails.
+![输入商业问题与决策背景](docs/images/step-01-input.png)
 
-## Workflow
+### 步骤 2：生成结构化研究计划
+
+![结构化研究计划](docs/images/step-02-plan.png)
+
+### 步骤 3：评估证据质量与相关性
+
+![证据质量与相关性评估](docs/images/step-03-evidence.png)
+
+### 步骤 4：输出带引用的决策简报
+
+![带引用的决策简报](docs/images/step-04-brief.png)
+
+## 项目简介
+
+商业决策往往需要综合市场需求、成本、竞争、运营和监管等多方面信息。普通搜索只能返回网页结果，不能直接形成可靠建议。本项目将研究过程拆分为规划、检索、评估和决策四个阶段，使最终结论能够回溯到具体来源，并在证据不足时主动降低置信度。
+
+系统主要完成以下任务：
+
+- 将商业问题拆分为可研究的子问题、检索词和成功标准；
+- 通过 Tavily 搜集当前公开网页证据；
+- 分别评估来源质量和决策相关性；
+- 提炼每条来源直接支持的观点及其局限；
+- 为关键发现附加来源编号和原文链接；
+- 在证据薄弱或流程失败时给出保守建议和人工核验提示。
+
+## 工作流程
 
 ```mermaid
 flowchart TD
-    A[Business question] --> B[Research planner]
-    B --> C[Web search]
-    C --> D[Evidence reviewer]
-    D --> E[Decision synthesizer]
-    E --> F[Cited decision brief]
+    A[商业问题] --> B[研究规划]
+    B --> C[网页检索]
+    C --> D[证据评估]
+    D --> E[决策综合]
+    E --> F[带引用的决策简报]
 ```
 
-### 1. Research planning
+### 1. 研究规划
 
-The planner converts a decision question into:
+系统将用户输入转化为：
 
-- researchable subquestions;
-- concise search-engine queries;
-- observable success criteria.
+- 可研究的子问题；
+- 简洁的搜索引擎检索词；
+- 可观察、与决策直接相关的成功标准。
 
-### 2. Evidence collection
+### 2. 证据检索
 
-Search queries are submitted concurrently through the Tavily API. Results are normalized and filtered using relevance scores.
+多个检索词通过 Tavily API 并发执行。搜索结果经过格式统一和相关性筛选后进入证据评估环节。
 
-### 3. Evidence review
+### 3. 证据评估
 
-Each selected source is reviewed independently for:
+每条入选来源分别评估：
 
-- source type;
-- source quality;
-- decision relevance;
-- supported claim;
-- limitations.
+- 来源类型；
+- 来源质量；
+- 决策相关性；
+- 直接支持的观点；
+- 证据局限性。
 
-If one AI review fails, only that source uses the rule-based fallback. Other sources continue through the normal review process.
+如果某条来源的 AI 评估失败，只有该来源转入规则评估，其他来源仍继续正常处理。
 
-### 4. Decision synthesis
+### 4. 决策综合
 
-The synthesizer produces:
+最终输出包括：
 
-- an executive summary;
-- a recommendation;
-- a confidence level;
-- evidence-backed findings with source IDs;
-- strategic alternatives;
-- risks and uncertainty;
-- recommended next steps.
+- 执行摘要；
+- 核心建议；
+- 置信度；
+- 带来源编号的关键发现；
+- 备选策略；
+- 风险与不确定性；
+- 建议的下一步行动。
 
-## Technology Stack
+## 示例研究问题
+
+```text
+研究问题：
+沈阳一家拥有20家门店的区域零售商，是否应该在未来90天内推出当日达服务？
+
+企业或行业背景：
+线上订单约占总销售额15%，公司物流预算有限，目前没有自建配送团队。
+```
+
+## 技术实现
 
 - Python
 - FastAPI
@@ -74,10 +104,10 @@ The synthesizer produces:
 - Groq API
 - `openai/gpt-oss-20b`
 - Tavily Search API
-- HTML, CSS and JavaScript
+- HTML、CSS、JavaScript
 - Uvicorn
 
-## Project Structure
+## 项目结构
 
 ```text
 business-research-decision-agent/
@@ -104,113 +134,88 @@ business-research-decision-agent/
 └── requirements.txt
 ```
 
-## Local Setup
+## 本地运行
 
-### 1. Clone the repository
+### 1. 克隆仓库
 
 ```powershell
 git clone https://github.com/jeffreyzhjin/business-research-decision-agent.git
 cd business-research-decision-agent
 ```
 
-### 2. Create a virtual environment
+### 2. 创建并激活虚拟环境
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 3. 安装依赖
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
-
-Copy the environment template:
+### 4. 配置环境变量
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Open `.env` and provide your own API keys:
+在 `.env` 中填写自己的 API Key：
 
 ```env
 GROQ_API_KEY=your_groq_api_key
 TAVILY_API_KEY=your_tavily_api_key
 ```
 
-Never commit the `.env` file.
+请勿将 `.env` 文件提交到 GitHub。
 
-### 5. Start the application
+### 5. 启动应用
 
 ```powershell
 python -m uvicorn app:app --reload
 ```
 
-Open the application:
+应用地址：`http://127.0.0.1:8000`
 
-```text
-http://127.0.0.1:8000
-```
+API 文档：`http://127.0.0.1:8000/docs`
 
-Interactive API documentation is available at:
+## API 接口
 
-```text
-http://127.0.0.1:8000/docs
-```
-
-## Example Research Request
-
-```json
-{
-  "question": "Should a regional retailer launch same-day delivery?",
-  "context": "The company operates 20 stores in Shenyang, online orders account for approximately 15% of sales, and the company has no in-house delivery team.",
-  "horizon": "90 days"
-}
-```
-
-The API returns a structured research plan, reviewed evidence, and a decision brief with traceable source identifiers.
-
-## API Endpoints
-
-| Method | Endpoint | Description |
+| 方法 | 路径 | 功能 |
 |---|---|---|
-| `GET` | `/api/health` | Checks whether the application is running |
-| `POST` | `/api/research` | Runs the complete research and decision pipeline |
-| `GET` | `/docs` | Opens the interactive API documentation |
+| `GET` | `/api/health` | 检查应用运行状态 |
+| `POST` | `/api/research` | 执行完整研究与决策流程 |
+| `GET` | `/docs` | 打开交互式 API 文档 |
 
-## Reliability Design
+## 可靠性设计
 
-The application includes several safeguards:
+- 使用 Pydantic 对结构化输出进行严格校验；
+- 禁止 AI 生成的数据模型包含额外字段；
+- 根据相关性分数筛选搜索结果；
+- 对每条证据进行独立评估；
+- 单条评估失败时使用规则兜底；
+- 校验决策发现引用的来源编号；
+- 证据不足时降低置信度并采用保守建议。
 
-- strict Pydantic validation for structured outputs;
-- prohibited extra fields in AI-generated data models;
-- relevance-score filtering for search results;
-- independent review of each evidence source;
-- deterministic fallback assessments;
-- validation of source IDs used in decision findings;
-- conservative recommendations when evidence is weak.
+## 当前局限
 
-## Current Limitations
+- 搜索质量会受到检索词表达方式的影响；
+- 公开网页可能包含过时、商业化或间接相关的信息；
+- 规则兜底生成的评估仍需要人工核验；
+- 当前版本不会保存历史研究记录；
+- 免费 API 套餐可能存在请求次数和响应速度限制；
+- 决策简报仅用于辅助判断，不能替代专业的财务、法律或监管意见。
 
-- Search quality depends on the wording of generated queries.
-- Public web search may return outdated, commercial, or indirectly relevant sources.
-- Rule-based fallback assessments require manual verification.
-- The application does not currently persist research sessions.
-- Free API tiers may introduce request limits or slower responses.
-- The generated decision brief supports human judgment and should not be treated as professional financial, legal, or regulatory advice.
+## 后续改进
 
-## Future Improvements
-
-- Add source-date extraction and freshness scoring.
-- Support domain filtering and preferred-source lists.
-- Save and compare previous research sessions.
-- Add export to PDF or Markdown.
-- Introduce automated evaluation datasets.
-- Add user authentication and deployment monitoring.
+- 增加来源日期提取与时效性评分；
+- 支持指定优先来源和网站范围；
+- 保存并比较历史研究记录；
+- 支持导出 PDF 或 Markdown；
+- 建立自动化评测数据集。
 
 ## License
 
-This project is licensed under the MIT License.
+本项目采用 MIT License。
