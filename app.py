@@ -30,7 +30,7 @@ async def health_check():
 async def research(
     request: ResearchRequest,
 ) -> ResearchResponse:
-    return create_research_plan(request)
+    return await create_research_plan(request)
 
 
 app.mount(
