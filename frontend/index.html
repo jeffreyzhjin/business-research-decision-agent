@@ -14,17 +14,23 @@
 <body>
     <header class="hero">
         <div class="container">
-            <p class="eyebrow">EVIDENCE-GROUNDED AI WORKFLOW</p>
+            <p class="eyebrow">
+                EVIDENCE-GROUNDED AI WORKFLOW
+            </p>
+
             <h1>Business Research Decision Agent</h1>
+
             <p class="hero-description">
-                Turn an open-ended business question into a structured
-                research plan, traceable evidence, strategic options,
-                and a decision-ready brief.
+                Turn an open-ended business question into a
+                structured research plan, traceable evidence,
+                strategic options, and a decision-ready brief.
             </p>
 
             <div class="status-line">
                 <span class="status-dot"></span>
-                <span id="service-status">Checking backend connection...</span>
+                <span id="service-status">
+                    Checking backend connection...
+                </span>
             </div>
         </div>
     </header>
@@ -35,39 +41,61 @@
                 <p class="step-label">STEP 01</p>
                 <h2>Define the decision</h2>
                 <p>
-                    Give the agent a specific business question and
-                    enough context to understand the decision boundary.
+                    Give the agent a specific business question
+                    and enough context to understand the
+                    decision boundary.
                 </p>
             </div>
 
             <form id="research-form">
-                <label for="question">Research question</label>
+                <label for="question">
+                    Research question
+                </label>
+
                 <textarea
                     id="question"
                     name="question"
                     rows="5"
                     required
-                    placeholder="Example: Which customer segment should a regional service platform prioritize for its next growth initiative?"
+                    placeholder="Example: Should a regional retailer launch same-day delivery?"
                 ></textarea>
 
-                <label for="context">Company or industry context</label>
+                <label for="context">
+                    Company or industry context
+                </label>
+
                 <input
                     id="context"
                     name="context"
                     type="text"
-                    placeholder="Example: Regional lifestyle-services platform"
+                    placeholder="Example: Operating in Shenyang with a limited logistics budget"
                 >
 
-                <label for="horizon">Decision horizon</label>
+                <label for="horizon">
+                    Decision horizon
+                </label>
+
                 <select id="horizon" name="horizon">
-                    <option value="90 days">Next 90 days</option>
-                    <option value="12 months">Next 12 months</option>
-                    <option value="3 years">Next 3 years</option>
+                    <option value="90 days">
+                        Next 90 days
+                    </option>
+                    <option value="12 months">
+                        Next 12 months
+                    </option>
+                    <option value="3 years">
+                        Next 3 years
+                    </option>
                 </select>
 
                 <button id="run-button" type="submit">
                     Run research agent
                 </button>
+
+                <p
+                    id="run-message"
+                    class="run-message"
+                    aria-live="polite"
+                ></p>
             </form>
         </section>
 
@@ -82,40 +110,73 @@
                     <span>1</span>
                     <div>
                         <strong>Plan</strong>
-                        <p>Break the decision into researchable questions.</p>
+                        <p>
+                            Break the decision into
+                            researchable questions.
+                        </p>
                     </div>
                 </li>
+
                 <li>
                     <span>2</span>
                     <div>
                         <strong>Research</strong>
-                        <p>Collect relevant facts and source information.</p>
+                        <p>
+                            Collect relevant facts and
+                            source information.
+                        </p>
                     </div>
                 </li>
+
                 <li>
                     <span>3</span>
                     <div>
                         <strong>Review</strong>
-                        <p>Check evidence quality and identify uncertainty.</p>
+                        <p>
+                            Check evidence quality and
+                            identify uncertainty.
+                        </p>
                     </div>
                 </li>
+
                 <li>
                     <span>4</span>
                     <div>
                         <strong>Decide</strong>
-                        <p>Compare options and produce an actionable brief.</p>
+                        <p>
+                            Compare options and produce
+                            an actionable brief.
+                        </p>
                     </div>
                 </li>
             </ol>
         </aside>
 
-        <section id="result-panel" class="panel result-panel" hidden>
+        <section
+            id="error-panel"
+            class="panel error-panel"
+            hidden
+        >
+            <p class="step-label">REQUEST ERROR</p>
+            <h2>Research could not be completed</h2>
+            <p id="error-message"></p>
+        </section>
+
+        <section
+            id="result-panel"
+            class="panel result-panel"
+            hidden
+        >
             <div class="result-heading">
                 <div>
                     <p class="step-label">STEP 02</p>
                     <h2>Research plan</h2>
                 </div>
-                <span id="result-status" class="result-badge">
+
+                <span
+                    id="result-status"
+                    class="result-badge"
+                >
                     Planning complete
                 </span>
             </div>
@@ -146,6 +207,102 @@
                 <div class="result-block">
                     <h3>Success criteria</h3>
                     <ul id="criteria-output"></ul>
+                </div>
+
+                <div class="result-block full-width-block">
+                    <h3>Search strategy</h3>
+                    <ul
+                        id="search-queries-output"
+                        class="query-list"
+                    ></ul>
+                </div>
+            </div>
+        </section>
+
+        <section
+            id="evidence-panel"
+            class="panel evidence-panel"
+            hidden
+        >
+            <div class="result-heading">
+                <div>
+                    <p class="step-label">STEP 03</p>
+                    <h2>Evidence review</h2>
+                </div>
+
+                <span
+                    id="evidence-count"
+                    class="neutral-badge"
+                >
+                    0 sources reviewed
+                </span>
+            </div>
+
+            <p class="panel-introduction">
+                Sources are evaluated separately for relevance
+                and quality. Search relevance does not by itself
+                prove that a source is reliable.
+            </p>
+
+            <div
+                id="evidence-output"
+                class="evidence-list"
+            ></div>
+        </section>
+
+        <section
+            id="decision-panel"
+            class="panel decision-panel"
+            hidden
+        >
+            <div class="result-heading">
+                <div>
+                    <p class="step-label">STEP 04</p>
+                    <h2>Decision brief</h2>
+                </div>
+
+                <span
+                    id="confidence-badge"
+                    class="confidence-badge"
+                >
+                    Confidence: —
+                </span>
+            </div>
+
+            <div class="brief-highlight">
+                <h3>Executive summary</h3>
+                <p id="executive-summary-output"></p>
+            </div>
+
+            <div class="recommendation-block">
+                <p class="recommendation-label">
+                    RECOMMENDATION
+                </p>
+                <p id="recommendation-output"></p>
+            </div>
+
+            <div class="brief-section">
+                <h3>Evidence-backed findings</h3>
+                <ol
+                    id="findings-output"
+                    class="findings-list"
+                ></ol>
+            </div>
+
+            <div class="brief-grid">
+                <div class="result-block">
+                    <h3>Strategic alternatives</h3>
+                    <ul id="alternatives-output"></ul>
+                </div>
+
+                <div class="result-block">
+                    <h3>Risks and uncertainty</h3>
+                    <ul id="risks-output"></ul>
+                </div>
+
+                <div class="result-block">
+                    <h3>Recommended next steps</h3>
+                    <ol id="next-steps-output"></ol>
                 </div>
             </div>
         </section>

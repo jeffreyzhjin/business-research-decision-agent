@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 DecisionHorizon = Literal[
@@ -9,12 +9,29 @@ DecisionHorizon = Literal[
     "3 years",
 ]
 
+EvidenceLevel = Literal[
+    "high",
+    "medium",
+    "low",
+]
+
+SourceType = Literal[
+    "government",
+    "academic",
+    "industry_report",
+    "company",
+    "news",
+    "other",
+]
+
 
 class ResearchRequest(BaseModel):
     question: str = Field(
         min_length=10,
         max_length=1000,
-        description="The business decision that needs to be researched.",
+        description=(
+            "The business decision that needs to be researched."
+        ),
     )
     context: str = Field(
         default="",
@@ -27,12 +44,71 @@ class ResearchRequest(BaseModel):
 class ResearchPlan(BaseModel):
     decision_question: str
     context: str
-    horizon: DecisionHorizon
+    horizon: str
     subquestions: list[str]
+    search_queries: list[str]
     success_criteria: list[str]
+
+
+class EvidenceRecord(BaseModel):
+    title: str
+    url: str
+    excerpt: str
+    relevance_score: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+    query: str
+
+
+class EvidenceBundle(BaseModel):
+    query: str
+    records: list[EvidenceRecord]
+
+
+class EvidenceAssessment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source_id: str
+    source_type: SourceType
+    quality: EvidenceLevel
+    relevance: EvidenceLevel
+    key_claim: str
+    limitations: str
+
+
+class CitedFinding(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    claim: str
+    source_ids: list[str]
+
+
+class DecisionBrief(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    executive_summary: str
+    recommendation: str
+    confidence: EvidenceLevel
+    key_findings: list[CitedFinding]
+    alternatives: list[str]
+    risks: list[str]
+    next_steps: list[str]
 
 
 class ResearchResponse(BaseModel):
     status: Literal["completed"]
-    stage: Literal["planning"]
+    stage: Literal[
+        "planning",
+        "research",
+        "review",
+        "decision",
+    ]
     plan: ResearchPlan
+    evidence: list[EvidenceBundle] = Field(
+        default_factory=list,
+    )
+    assessments: list[EvidenceAssessment] = Field(
+        default_factory=list,
+    )
+    brief: DecisionBrief | None = None

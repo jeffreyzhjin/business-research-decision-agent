@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from src.models import ResearchRequest, ResearchResponse
-from src.workflow import create_research_plan
+from src.workflow import run_research
 
 
 app = FastAPI(
@@ -30,7 +30,7 @@ async def health_check():
 async def research(
     request: ResearchRequest,
 ) -> ResearchResponse:
-    return await create_research_plan(request)
+    return await run_research(request)
 
 
 app.mount(
