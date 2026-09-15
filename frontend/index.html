@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Business Research Decision Agent</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+
+<body>
+    <header class="hero">
+        <div class="container">
+            <p class="eyebrow">EVIDENCE-GROUNDED AI WORKFLOW</p>
+            <h1>Business Research Decision Agent</h1>
+            <p class="hero-description">
+                Turn an open-ended business question into a structured
+                research plan, traceable evidence, strategic options,
+                and a decision-ready brief.
+            </p>
+
+            <div class="status-line">
+                <span class="status-dot"></span>
+                <span id="service-status">Checking backend connection...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container workspace">
+        <section class="panel input-panel">
+            <div class="section-heading">
+                <p class="step-label">STEP 01</p>
+                <h2>Define the decision</h2>
+                <p>
+                    Give the agent a specific business question and
+                    enough context to understand the decision boundary.
+                </p>
+            </div>
+
+            <form id="research-form">
+                <label for="question">Research question</label>
+                <textarea
+                    id="question"
+                    name="question"
+                    rows="5"
+                    required
+                    placeholder="Example: Which customer segment should a regional service platform prioritize for its next growth initiative?"
+                ></textarea>
+
+                <label for="context">Company or industry context</label>
+                <input
+                    id="context"
+                    name="context"
+                    type="text"
+                    placeholder="Example: Regional lifestyle-services platform"
+                >
+
+                <label for="horizon">Decision horizon</label>
+                <select id="horizon" name="horizon">
+                    <option value="90 days">Next 90 days</option>
+                    <option value="12 months">Next 12 months</option>
+                    <option value="3 years">Next 3 years</option>
+                </select>
+
+                <button id="run-button" type="submit">
+                    Run research agent
+                </button>
+            </form>
+        </section>
+
+        <aside class="panel workflow-panel">
+            <div class="section-heading">
+                <p class="step-label">AGENT WORKFLOW</p>
+                <h2>How the decision is built</h2>
+            </div>
+
+            <ol class="workflow-list">
+                <li>
+                    <span>1</span>
+                    <div>
+                        <strong>Plan</strong>
+                        <p>Break the decision into researchable questions.</p>
+                    </div>
+                </li>
+                <li>
+                    <span>2</span>
+                    <div>
+                        <strong>Research</strong>
+                        <p>Collect relevant facts and source information.</p>
+                    </div>
+                </li>
+                <li>
+                    <span>3</span>
+                    <div>
+                        <strong>Review</strong>
+                        <p>Check evidence quality and identify uncertainty.</p>
+                    </div>
+                </li>
+                <li>
+                    <span>4</span>
+                    <div>
+                        <strong>Decide</strong>
+                        <p>Compare options and produce an actionable brief.</p>
+                    </div>
+                </li>
+            </ol>
+        </aside>
+
+        <section id="result-panel" class="panel result-panel" hidden>
+            <div class="result-heading">
+                <div>
+                    <p class="step-label">STEP 02</p>
+                    <h2>Research plan</h2>
+                </div>
+                <span id="result-status" class="result-badge">
+                    Planning complete
+                </span>
+            </div>
+
+            <div class="result-summary">
+                <div class="result-block">
+                    <h3>Decision question</h3>
+                    <p id="decision-question-output"></p>
+                </div>
+
+                <div class="result-block">
+                    <h3>Decision context</h3>
+                    <p id="context-output"></p>
+                </div>
+
+                <div class="result-block">
+                    <h3>Decision horizon</h3>
+                    <p id="horizon-output"></p>
+                </div>
+            </div>
+
+            <div class="result-columns">
+                <div class="result-block">
+                    <h3>Research subquestions</h3>
+                    <ol id="subquestions-output"></ol>
+                </div>
+
+                <div class="result-block">
+                    <h3>Success criteria</h3>
+                    <ul id="criteria-output"></ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            Portfolio project by ZHANG JIN · Business research,
+            structured evidence, and decision support
+        </div>
+    </footer>
+</body>
+</html>

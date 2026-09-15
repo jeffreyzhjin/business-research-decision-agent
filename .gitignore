@@ -1,0 +1,24 @@
+# Python virtual environment
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Local secrets
+.env
+
+# Test and tool caches
+.pytest_cache/
+.mypy_cache/
+
+# Generated output files
+outputs/*
+!outputs/.gitkeep
+
+# Local editor settings
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
