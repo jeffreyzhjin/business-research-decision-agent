@@ -49,6 +49,30 @@ const nextStepsOutput = document.querySelector(
     "#next-steps-output"
 );
 
+const translations = {
+    horizon: {
+        "90 days": "未来90天",
+        "12 months": "未来12个月",
+        "3 years": "未来3年",
+    },
+    sourceType: {
+        government: "政府部门",
+        academic: "学术研究",
+        industry_report: "行业报告",
+        company: "企业来源",
+        news: "新闻媒体",
+        other: "其他",
+    },
+    level: {
+        high: "高",
+        medium: "中",
+        low: "低",
+    },
+    serviceStatus: {
+        healthy: "正常",
+    },
+};
+
 
 async function checkBackend() {
     try {
@@ -56,18 +80,21 @@ async function checkBackend() {
 
         if (!response.ok) {
             throw new Error(
-                "The backend returned an error."
+                "服务返回异常。"
             );
         }
 
         const data = await response.json();
+        const localizedStatus =
+            translations.serviceStatus[data.status]
+            || data.status;
 
         serviceStatus.textContent =
-            `Backend status: ${data.status}`;
+            `服务状态：${localizedStatus}`;
         statusDot.classList.add("connected");
     } catch (error) {
         serviceStatus.textContent =
-            "Backend connection unavailable";
+            "暂时无法连接服务";
         statusDot.classList.remove("connected");
     }
 }
@@ -97,9 +124,11 @@ function renderPlan(plan) {
         plan.decision_question;
 
     contextOutput.textContent =
-        plan.context || "No additional context provided.";
+        plan.context || "未提供补充背景。";
 
-    horizonOutput.textContent = plan.horizon;
+    horizonOutput.textContent =
+        translations.horizon[plan.horizon]
+        || plan.horizon;
 
     renderList(
         subquestionsOutput,
@@ -116,7 +145,7 @@ function renderPlan(plan) {
         plan.search_queries
     );
 
-    resultStatus.textContent = "Research complete";
+    resultStatus.textContent = "研究已完成";
     resultPanel.hidden = false;
 }
 
@@ -202,7 +231,7 @@ function renderEvidence(
     );
 
     evidenceCount.textContent =
-        `${sources.length} sources reviewed`;
+        `已评估 ${sources.length} 个来源`;
 
     const sourceLookup = new Map();
 
@@ -211,7 +240,7 @@ function renderEvidence(
 
         emptyMessage.className = "empty-message";
         emptyMessage.textContent =
-            "No sufficiently relevant evidence was found.";
+            "未找到相关性足够高的证据。";
 
         evidenceOutput.appendChild(emptyMessage);
         evidencePanel.hidden = false;
@@ -242,7 +271,7 @@ function renderEvidence(
         const sourceLink = document.createElement("a");
         sourceLink.className = "source-link";
         sourceLink.textContent =
-            record.title || "Untitled source";
+            record.title || "未命名来源";
 
         const safeUrl = getSafeUrl(record.url);
 
@@ -263,18 +292,24 @@ function renderEvidence(
         if (assessment) {
             tags.append(
                 createTag(
-                    "Type",
-                    assessment.source_type,
+                    "类型",
+                    translations.sourceType[
+                        assessment.source_type
+                    ] || assessment.source_type,
                     "neutral-tag"
                 ),
                 createTag(
-                    "Quality",
-                    assessment.quality,
+                    "质量",
+                    translations.level[
+                        assessment.quality
+                    ] || assessment.quality,
                     `quality-${assessment.quality}`
                 ),
                 createTag(
-                    "Relevance",
-                    assessment.relevance,
+                    "相关性",
+                    translations.level[
+                        assessment.relevance
+                    ] || assessment.relevance,
                     `relevance-${assessment.relevance}`
                 )
             );
@@ -282,20 +317,20 @@ function renderEvidence(
 
         const queryText = document.createElement("p");
         queryText.className = "evidence-query";
-        queryText.textContent = `Search query: ${query}`;
+        queryText.textContent = `检索词：${query}`;
 
         const claimHeading = document.createElement("h3");
-        claimHeading.textContent = "Supported claim";
+        claimHeading.textContent = "支持的观点";
 
         const claimText = document.createElement("p");
         claimText.className = "evidence-claim";
         claimText.textContent = assessment
             ? assessment.key_claim
-            : "No reviewer assessment was returned.";
+            : "证据评估未返回结果。";
 
         const limitationsHeading =
             document.createElement("h3");
-        limitationsHeading.textContent = "Limitations";
+        limitationsHeading.textContent = "局限性";
 
         const limitationsText =
             document.createElement("p");
@@ -304,8 +339,7 @@ function renderEvidence(
         limitationsText.textContent = assessment
             ? assessment.limitations
             : (
-                "This source has not been reviewed "
-                + "and requires manual verification."
+                "该来源尚未完成评估，需要人工核验。"
             );
 
         card.append(
@@ -351,7 +385,7 @@ function renderFindings(
                 document.createElement("span");
 
             noCitation.textContent =
-                "No verified source citation";
+                "暂无可核验的来源引用";
 
             citations.appendChild(noCitation);
         } else {
@@ -408,7 +442,7 @@ function renderDecisionBrief(
         brief.confidence || "low";
 
     confidenceBadge.textContent =
-        `Confidence: ${confidence}`;
+        `置信度：${translations.level[confidence] || confidence}`;
 
     confidenceBadge.classList.remove(
         "confidence-high",
@@ -465,13 +499,13 @@ form.addEventListener("submit", async (event) => {
 
     runButton.disabled = true;
     runButton.textContent =
-        "Running research agent...";
+        "研究进行中……";
 
     const progressMessages = [
-        "Building the research plan...",
-        "Searching for relevant evidence...",
-        "Reviewing source quality...",
-        "Preparing the decision brief...",
+        "正在制定研究计划……",
+        "正在检索相关证据……",
+        "正在评估来源质量……",
+        "正在生成决策简报……",
     ];
 
     let messageIndex = 0;
@@ -506,8 +540,8 @@ form.addEventListener("submit", async (event) => {
 
         if (!response.ok) {
             throw new Error(
-                "Research request failed with "
-                + `status ${response.status}.`
+                "研究请求失败，状态码："
+                + `${response.status}。`
             );
         }
 
@@ -515,15 +549,13 @@ form.addEventListener("submit", async (event) => {
 
         if (!data.plan) {
             throw new Error(
-                "The response did not contain "
-                + "a research plan."
+                "服务未返回研究计划。"
             );
         }
 
         if (!data.brief) {
             throw new Error(
-                "The response did not contain "
-                + "a decision brief."
+                "服务未返回决策简报。"
             );
         }
 
@@ -540,7 +572,7 @@ form.addEventListener("submit", async (event) => {
         );
 
         runMessage.textContent =
-            "Research and decision brief complete.";
+            "研究与决策简报已生成。";
 
         resultPanel.scrollIntoView({
             behavior: "smooth",
@@ -548,12 +580,12 @@ form.addEventListener("submit", async (event) => {
     } catch (error) {
         errorMessage.textContent =
             error.message
-            || "An unexpected error occurred.";
+            || "发生未知错误，请稍后重试。";
 
         errorPanel.hidden = false;
 
         runMessage.textContent =
-            "The research request could not be completed.";
+            "本次研究请求未能完成。";
 
         errorPanel.scrollIntoView({
             behavior: "smooth",
@@ -563,7 +595,7 @@ form.addEventListener("submit", async (event) => {
 
         runButton.disabled = false;
         runButton.textContent =
-            "Run research agent";
+            "开始研究";
     }
 });
 

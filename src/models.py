@@ -30,13 +30,13 @@ class ResearchRequest(BaseModel):
         min_length=10,
         max_length=1000,
         description=(
-            "The business decision that needs to be researched."
+            "需要研究的商业决策问题。"
         ),
     )
     context: str = Field(
         default="",
         max_length=500,
-        description="Relevant company or industry context.",
+        description="与决策相关的企业或行业背景。",
     )
     horizon: DecisionHorizon = "90 days"
 

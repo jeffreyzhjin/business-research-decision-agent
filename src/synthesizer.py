@@ -44,8 +44,7 @@ def build_fallback_brief(
         key_findings = [
             CitedFinding(
                 claim=(
-                    "The available search evidence is "
-                    "insufficient for a reliable decision."
+                    "现有检索证据不足以支持可靠决策。"
                 ),
                 source_ids=[],
             )
@@ -53,34 +52,30 @@ def build_fallback_brief(
 
     return DecisionBrief(
         executive_summary=(
-            "Evidence was collected, but the automated "
-            "decision synthesis was unavailable or could "
-            "not be validated. The available material "
-            "should be treated as preliminary."
+            "系统已搜集部分证据，但自动决策综合暂时不可用或未通过验证。"
+            "当前材料只能作为初步参考。"
         ),
         recommendation=(
-            "Do not make an irreversible decision yet. "
-            "Validate the most important assumptions "
-            "through additional primary research or a "
-            "limited pilot."
+            "暂不作出不可逆决策。建议通过补充一手调研或开展小范围试点，"
+            "验证最关键的假设。"
         ),
         confidence="low",
         key_findings=key_findings,
         alternatives=[
-            "Run a limited and measurable pilot.",
-            "Delay the decision until stronger evidence is available.",
-            "Maintain the current approach while collecting data.",
+            "开展范围有限且可量化评估的试点。",
+            "推迟决策，等待更有力的证据。",
+            "在继续收集数据期间维持现有方案。",
         ],
         risks=[
-            "Available sources may not represent the local market.",
-            "Search excerpts may omit important context.",
-            "Important financial assumptions remain unverified.",
+            "现有来源可能不能代表本地市场。",
+            "搜索摘要可能遗漏重要上下文。",
+            "关键财务假设仍未得到验证。",
         ],
         next_steps=[
-            "Open and verify all high- and medium-quality sources.",
-            "Collect primary customer and operational data.",
-            "Define measurable decision thresholds.",
-            "Update the analysis when stronger evidence is available.",
+            "打开并核验所有高质量和中等质量来源。",
+            "收集客户与运营方面的一手数据。",
+            "设定可量化的决策阈值。",
+            "获得更有力的证据后更新分析。",
         ],
     )
 
@@ -134,19 +129,14 @@ async def synthesize_decision(
                 {
                     "role": "system",
                     "content": (
-                        "You are the decision synthesis "
-                        "component of an evidence-grounded "
-                        "business research agent. Use only "
-                        "the supplied sources and assessments. "
-                        "Do not invent facts, statistics, or "
-                        "citations. Treat success criteria as "
-                        "proposed decision thresholds, not as "
-                        "established facts. Every key finding "
-                        "must cite one or more valid source_ids. "
-                        "If evidence is weak or incomplete, "
-                        "say so and lower confidence. Use the "
-                        "same language as the decision question. "
-                        "Return only one valid JSON object."
+                        "你是基于证据的商业研究助手中的决策综合模块。"
+                        "只能使用给定来源和评估，不得虚构事实、统计数据或引用。"
+                        "成功标准只是建议的决策阈值，不是已经成立的事实。"
+                        "每项关键发现必须引用一个或多个有效 source_id。"
+                        "如果证据薄弱或不完整，必须明确说明并降低置信度。"
+                        "所有面向用户的文字，包括摘要、建议、发现、备选方案、"
+                        "风险和下一步行动，都必须使用自然、清晰的简体中文。"
+                        "只返回一个有效 JSON 对象。"
                     ),
                 },
                 {
@@ -167,9 +157,8 @@ async def synthesize_decision(
                         '  "risks": ["..."],\n'
                         '  "next_steps": ["..."]\n'
                         "}\n\n"
-                        "Allowed confidence values are "
-                        "high, medium, or low.\n\n"
-                        "Research material:\n"
+                        "confidence 只能是 high、medium 或 low。\n\n"
+                        "研究材料：\n"
                         f"{synthesis_json}"
                     ),
                 },

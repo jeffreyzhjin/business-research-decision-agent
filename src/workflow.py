@@ -39,36 +39,34 @@ class PlannerOutput(BaseModel):
 
 
 def build_planner_prompt(request: ResearchRequest) -> str:
-    context = request.context or "No additional context provided."
+    context = request.context or "未提供补充背景。"
 
     return f"""
-Decision question:
+决策问题：
 {request.question}
 
-Company or industry context:
+企业或行业背景：
 {context}
 
-Decision horizon:
+决策周期：
 {request.horizon}
 
-Create a focused research plan for this decision.
-Do not answer the decision question yet.
-Do not invent facts, statistics, companies, or sources.
+为这一决策制定聚焦、可执行的研究计划，暂时不要直接回答决策问题。
+不得虚构事实、统计数据、企业或来源。
 
-Produce exactly 6 concise web search queries.
-Write search queries as keywords, not full questions.
+所有研究子问题和成功标准必须使用简体中文。
+恰好生成6个简洁的网页检索词，使用关键词而不是完整问句。
 
-Use a layered search strategy:
-- two queries for the specific local market;
-- two queries for national industry benchmarks or comparable cases;
-- one query for costs, unit economics, or financial viability;
-- one query for operational or regulatory risks.
+采用分层检索策略：
+- 2个针对具体本地市场的检索词；
+- 2个针对全国行业基准或可比案例的检索词；
+- 1个针对成本、单位经济性或财务可行性的检索词；
+- 1个针对运营或监管风险的检索词。
 
-When the target market mainly uses another language,
-write at least two queries in that market's local language.
-The remaining queries may use the user's language.
-Do not add a year unless the decision specifically requires one.
-Avoid making every query so narrow that no results can be found.
+当目标市场主要使用其他语言时，至少2个检索词使用当地语言；
+其余检索词使用简体中文，也可使用英文寻找国际基准。
+除非决策明确要求，否则不要强行添加年份。
+避免所有检索词都过度狭窄而导致没有结果。
 """.strip()
 
 
@@ -79,7 +77,7 @@ async def create_research_plan(
 
     if not api_key:
         raise RuntimeError(
-            "GROQ_API_KEY was not found. Check the .env file."
+            "未找到 GROQ_API_KEY，请检查环境变量配置。"
         )
 
     client = AsyncGroq(api_key=api_key)
@@ -90,15 +88,12 @@ async def create_research_plan(
             {
                 "role": "system",
                 "content": (
-                    "You are the planning component of an "
-                    "evidence-grounded business research agent. "
-                    "Break business decisions into specific, "
-                    "researchable subquestions. Cover customer needs, "
-                    "strategic alternatives, market evidence, "
-                    "operational and financial viability, risks, and "
-                    "decision thresholds when relevant. Success "
-                    "criteria must be observable and decision-relevant. "
-                    "Use the same language as the user's question."
+                    "你是基于证据的商业研究助手中的研究规划模块。"
+                    "请将商业决策拆分为具体、可研究的子问题，并在相关时"
+                    "覆盖客户需求、备选策略、市场证据、运营与财务可行性、"
+                    "风险和决策阈值。成功标准必须可观察且与决策直接相关。"
+                    "无论用户以何种语言提问，所有解释性内容都使用自然、"
+                    "清晰的简体中文。"
                 ),
             },
             {
@@ -120,7 +115,7 @@ async def create_research_plan(
 
     if not content:
         raise RuntimeError(
-            "The model returned an empty planning response."
+            "模型未返回研究计划。"
         )
 
     planner_output = PlannerOutput.model_validate(

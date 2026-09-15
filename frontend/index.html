@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
-    <title>Business Research Decision Agent</title>
+    <title>商业研究决策助手</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="/app.js" defer></script>
 </head>
@@ -15,21 +15,20 @@
     <header class="hero">
         <div class="container">
             <p class="eyebrow">
-                EVIDENCE-GROUNDED AI WORKFLOW
+                基于证据的 AI 研究流程
             </p>
 
-            <h1>Business Research Decision Agent</h1>
+            <h1>商业研究决策助手</h1>
 
             <p class="hero-description">
-                Turn an open-ended business question into a
-                structured research plan, traceable evidence,
-                strategic options, and a decision-ready brief.
+                将开放式商业问题转化为结构化研究计划、
+                可追溯证据、策略选项与决策简报。
             </p>
 
             <div class="status-line">
                 <span class="status-dot"></span>
                 <span id="service-status">
-                    Checking backend connection...
+                    正在检查服务连接……
                 </span>
             </div>
         </div>
@@ -38,18 +37,17 @@
     <main class="container workspace">
         <section class="panel input-panel">
             <div class="section-heading">
-                <p class="step-label">STEP 01</p>
-                <h2>Define the decision</h2>
+                <p class="step-label">步骤 01</p>
+                <h2>明确决策问题</h2>
                 <p>
-                    Give the agent a specific business question
-                    and enough context to understand the
-                    decision boundary.
+                    输入具体的商业问题和必要背景，帮助系统
+                    明确研究范围与决策边界。
                 </p>
             </div>
 
             <form id="research-form">
                 <label for="question">
-                    Research question
+                    研究问题
                 </label>
 
                 <textarea
@@ -57,38 +55,38 @@
                     name="question"
                     rows="5"
                     required
-                    placeholder="Example: Should a regional retailer launch same-day delivery?"
+                    placeholder="例如：一家区域零售商是否应该推出当日达服务？"
                 ></textarea>
 
                 <label for="context">
-                    Company or industry context
+                    企业或行业背景
                 </label>
 
                 <input
                     id="context"
                     name="context"
                     type="text"
-                    placeholder="Example: Operating in Shenyang with a limited logistics budget"
+                    placeholder="例如：在沈阳经营20家门店，物流预算有限，尚无自建配送团队"
                 >
 
                 <label for="horizon">
-                    Decision horizon
+                    决策周期
                 </label>
 
                 <select id="horizon" name="horizon">
                     <option value="90 days">
-                        Next 90 days
+                        未来90天
                     </option>
                     <option value="12 months">
-                        Next 12 months
+                        未来12个月
                     </option>
                     <option value="3 years">
-                        Next 3 years
+                        未来3年
                     </option>
                 </select>
 
                 <button id="run-button" type="submit">
-                    Run research agent
+                    开始研究
                 </button>
 
                 <p
@@ -101,18 +99,17 @@
 
         <aside class="panel workflow-panel">
             <div class="section-heading">
-                <p class="step-label">AGENT WORKFLOW</p>
-                <h2>How the decision is built</h2>
+                <p class="step-label">研究流程</p>
+                <h2>决策简报如何生成</h2>
             </div>
 
             <ol class="workflow-list">
                 <li>
                     <span>1</span>
                     <div>
-                        <strong>Plan</strong>
+                        <strong>规划</strong>
                         <p>
-                            Break the decision into
-                            researchable questions.
+                            将决策问题拆分为可研究的子问题。
                         </p>
                     </div>
                 </li>
@@ -120,10 +117,9 @@
                 <li>
                     <span>2</span>
                     <div>
-                        <strong>Research</strong>
+                        <strong>检索</strong>
                         <p>
-                            Collect relevant facts and
-                            source information.
+                            搜集相关事实与来源信息。
                         </p>
                     </div>
                 </li>
@@ -131,10 +127,9 @@
                 <li>
                     <span>3</span>
                     <div>
-                        <strong>Review</strong>
+                        <strong>评估</strong>
                         <p>
-                            Check evidence quality and
-                            identify uncertainty.
+                            评估证据质量并识别不确定性。
                         </p>
                     </div>
                 </li>
@@ -142,10 +137,9 @@
                 <li>
                     <span>4</span>
                     <div>
-                        <strong>Decide</strong>
+                        <strong>决策</strong>
                         <p>
-                            Compare options and produce
-                            an actionable brief.
+                            比较可选方案并生成可执行简报。
                         </p>
                     </div>
                 </li>
@@ -157,8 +151,8 @@
             class="panel error-panel"
             hidden
         >
-            <p class="step-label">REQUEST ERROR</p>
-            <h2>Research could not be completed</h2>
+            <p class="step-label">请求失败</p>
+            <h2>本次研究未能完成</h2>
             <p id="error-message"></p>
         </section>
 
@@ -169,48 +163,48 @@
         >
             <div class="result-heading">
                 <div>
-                    <p class="step-label">STEP 02</p>
-                    <h2>Research plan</h2>
+                    <p class="step-label">步骤 02</p>
+                    <h2>研究计划</h2>
                 </div>
 
                 <span
                     id="result-status"
                     class="result-badge"
                 >
-                    Planning complete
+                    研究计划已完成
                 </span>
             </div>
 
             <div class="result-summary">
                 <div class="result-block">
-                    <h3>Decision question</h3>
+                    <h3>决策问题</h3>
                     <p id="decision-question-output"></p>
                 </div>
 
                 <div class="result-block">
-                    <h3>Decision context</h3>
+                    <h3>决策背景</h3>
                     <p id="context-output"></p>
                 </div>
 
                 <div class="result-block">
-                    <h3>Decision horizon</h3>
+                    <h3>决策周期</h3>
                     <p id="horizon-output"></p>
                 </div>
             </div>
 
             <div class="result-columns">
                 <div class="result-block">
-                    <h3>Research subquestions</h3>
+                    <h3>研究子问题</h3>
                     <ol id="subquestions-output"></ol>
                 </div>
 
                 <div class="result-block">
-                    <h3>Success criteria</h3>
+                    <h3>成功标准</h3>
                     <ul id="criteria-output"></ul>
                 </div>
 
                 <div class="result-block full-width-block">
-                    <h3>Search strategy</h3>
+                    <h3>检索策略</h3>
                     <ul
                         id="search-queries-output"
                         class="query-list"
@@ -226,22 +220,21 @@
         >
             <div class="result-heading">
                 <div>
-                    <p class="step-label">STEP 03</p>
-                    <h2>Evidence review</h2>
+                    <p class="step-label">步骤 03</p>
+                    <h2>证据评估</h2>
                 </div>
 
                 <span
                     id="evidence-count"
                     class="neutral-badge"
                 >
-                    0 sources reviewed
+                    已评估 0 个来源
                 </span>
             </div>
 
             <p class="panel-introduction">
-                Sources are evaluated separately for relevance
-                and quality. Search relevance does not by itself
-                prove that a source is reliable.
+                系统分别评估来源的相关性与质量。检索结果相关，
+                并不等于该来源一定可靠。
             </p>
 
             <div
@@ -257,32 +250,32 @@
         >
             <div class="result-heading">
                 <div>
-                    <p class="step-label">STEP 04</p>
-                    <h2>Decision brief</h2>
+                    <p class="step-label">步骤 04</p>
+                    <h2>决策简报</h2>
                 </div>
 
                 <span
                     id="confidence-badge"
                     class="confidence-badge"
                 >
-                    Confidence: —
+                    置信度：—
                 </span>
             </div>
 
             <div class="brief-highlight">
-                <h3>Executive summary</h3>
+                <h3>执行摘要</h3>
                 <p id="executive-summary-output"></p>
             </div>
 
             <div class="recommendation-block">
                 <p class="recommendation-label">
-                    RECOMMENDATION
+                    建议
                 </p>
                 <p id="recommendation-output"></p>
             </div>
 
             <div class="brief-section">
-                <h3>Evidence-backed findings</h3>
+                <h3>有证据支持的发现</h3>
                 <ol
                     id="findings-output"
                     class="findings-list"
@@ -291,17 +284,17 @@
 
             <div class="brief-grid">
                 <div class="result-block">
-                    <h3>Strategic alternatives</h3>
+                    <h3>备选策略</h3>
                     <ul id="alternatives-output"></ul>
                 </div>
 
                 <div class="result-block">
-                    <h3>Risks and uncertainty</h3>
+                    <h3>风险与不确定性</h3>
                     <ul id="risks-output"></ul>
                 </div>
 
                 <div class="result-block">
-                    <h3>Recommended next steps</h3>
+                    <h3>建议的下一步行动</h3>
                     <ol id="next-steps-output"></ol>
                 </div>
             </div>
@@ -310,8 +303,7 @@
 
     <footer>
         <div class="container">
-            Portfolio project by ZHANG JIN · Business research,
-            structured evidence, and decision support
+            张进的作品集项目 · 商业研究、结构化证据与决策支持
         </div>
     </footer>
 </body>

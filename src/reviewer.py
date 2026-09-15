@@ -130,6 +130,10 @@ def compact_excerpt(
     return f"{shortened}…"
 
 
+def contains_chinese(text: str) -> bool:
+    return any("\u4e00" <= character <= "\u9fff" for character in text)
+
+
 def build_fallback_assessment(
     source: dict,
 ) -> EvidenceAssessment:
@@ -163,19 +167,29 @@ def build_fallback_assessment(
     else:
         relevance = "low"
 
+    excerpt = str(source["excerpt"])
+    title = str(source["title"])
+
+    if contains_chinese(excerpt):
+        key_claim = compact_excerpt(
+            excerpt=excerpt,
+            title=title,
+        )
+    else:
+        key_claim = (
+            f"来源《{title}》与当前检索词相关，但未完成 AI 中文评估；"
+            "请打开原文核验其具体结论。"
+        )
+
     return EvidenceAssessment(
         source_id=str(source["source_id"]),
         source_type=source_type,
         quality=quality,
         relevance=relevance,
-        key_claim=compact_excerpt(
-            excerpt=str(source["excerpt"]),
-            title=str(source["title"]),
-        ),
+        key_claim=key_claim,
         limitations=(
-            "Rule-based fallback assessment was used for "
-            "this source. The claim requires manual "
-            "verification."
+            "该来源使用了规则评估，因为 AI 评估暂时不可用；"
+            "相关观点仍需人工核验。"
         ),
     )
 
@@ -211,39 +225,24 @@ async def review_single_source(
                         {
                             "role": "system",
                             "content": (
-                                "You review one evidence "
-                                "source for a business "
-                                "decision. Return only one "
-                                "JSON object with exactly "
-                                "these fields: source_id, "
-                                "source_type, quality, "
-                                "relevance, key_claim, and "
-                                "limitations. Preserve the "
-                                "supplied source_id exactly. "
-                                "Allowed source_type values "
-                                "are government, academic, "
-                                "industry_report, company, "
-                                "news, or other. Allowed "
-                                "quality and relevance values "
-                                "are high, medium, or low. "
-                                "Write key_claim as one "
-                                "concise sentence directly "
-                                "supported by the excerpt. "
-                                "Do not copy navigation text "
-                                "or long passages. Do not "
-                                "invent facts. Mention missing "
-                                "dates, weak authority, "
-                                "commercial bias, or indirect "
-                                "relevance when applicable. "
-                                "Use the same language as the "
-                                "supplied evidence."
+                                "你负责评估一条用于商业决策的证据。"
+                                "只返回一个 JSON 对象，且仅包含 source_id、"
+                                "source_type、quality、relevance、key_claim "
+                                "和 limitations 字段。必须原样保留 source_id。"
+                                "source_type 只能是 government、academic、"
+                                "industry_report、company、news 或 other；"
+                                "quality 和 relevance 只能是 high、medium 或 low。"
+                                "key_claim 和 limitations 必须使用简体中文。"
+                                "key_claim 用一句简洁中文概括摘要直接支持的观点。"
+                                "不要复制导航文字或长段落，不得虚构事实。"
+                                "如存在日期缺失、来源权威性不足、商业偏向或"
+                                "间接相关等问题，应在 limitations 中明确说明。"
                             ),
                         },
                         {
                             "role": "user",
                             "content": (
-                                "Assess this source and return "
-                                "the required JSON object:"
+                                "评估以下来源并返回规定的 JSON 对象："
                                 "\n\n"
                                 f"{source_json}"
                             ),

@@ -6,11 +6,8 @@ from src.workflow import run_research
 
 
 app = FastAPI(
-    title="Business Research Decision Agent",
-    description=(
-        "An evidence-grounded agent for business research "
-        "and decision support."
-    ),
+    title="商业研究决策助手",
+    description="基于可追溯证据的商业研究与决策支持工具。",
     version="0.2.0",
 )
 

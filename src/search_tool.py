@@ -17,13 +17,13 @@ async def search_web(
     query = query.strip()
 
     if not query:
-        raise ValueError("Search query cannot be empty.")
+        raise ValueError("检索词不能为空。")
 
     api_key = os.getenv("TAVILY_API_KEY")
 
     if not api_key:
         raise RuntimeError(
-            "TAVILY_API_KEY was not found. Check the .env file."
+            "未找到 TAVILY_API_KEY，请检查环境变量配置。"
         )
 
     client = AsyncTavilyClient(api_key=api_key)
@@ -58,7 +58,7 @@ async def search_web(
 
         records.append(
             EvidenceRecord(
-                title=item.get("title") or "Untitled source",
+                title=item.get("title") or "未命名来源",
                 url=url,
                 excerpt=item.get("content") or "",
                 relevance_score=score_value,
