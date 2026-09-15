@@ -2,6 +2,10 @@
 
 An AI-powered research and decision-support application that transforms a business question into a structured research plan, searches for external evidence, evaluates source quality, and produces a cited decision brief.
 
+## Live Demo
+
+[Open the live application](https://business-research-decision-agent.vercel.app)
+
 ## Overview
 
 Business decisions often require information from multiple sources, but search results alone do not provide a reliable recommendation. This project implements an end-to-end research workflow that separates planning, evidence collection, evidence review, and decision synthesis.
