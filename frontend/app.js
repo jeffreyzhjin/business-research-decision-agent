@@ -1,4 +1,8 @@
 const form = document.querySelector("#research-form");
+const researchMode = document.querySelector("#mode");
+const researchQuestion = document.querySelector("#question");
+const researchContext = document.querySelector("#context");
+const briefTitle = document.querySelector("#brief-title");
 const runButton = document.querySelector("#run-button");
 const runMessage = document.querySelector("#run-message");
 
@@ -129,6 +133,12 @@ function renderPlan(plan) {
     horizonOutput.textContent =
         translations.horizon[plan.horizon]
         || plan.horizon;
+
+    briefTitle.textContent =
+        plan.mode === "industry" ? "行业研究简报" : "决策简报";
+
+    document.querySelector(".recommendation-label").textContent =
+        plan.mode === "industry" ? "综合研究判断" : "建议";
 
     renderList(
         subquestionsOutput,
@@ -482,6 +492,7 @@ form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const requestData = {
+        mode: researchMode.value,
         question: document
             .querySelector("#question")
             .value
@@ -599,5 +610,19 @@ form.addEventListener("submit", async (event) => {
     }
 });
 
+
+researchMode.addEventListener("change", () => {
+    if (researchMode.value === "industry") {
+        researchQuestion.placeholder =
+            "例如：中国商业银行行业的主要盈利模式、竞争格局与发展风险是什么？";
+        researchContext.placeholder =
+            "例如：关注中国市场，重点了解行业结构、代表企业和商业模式";
+    } else {
+        researchQuestion.placeholder =
+            "例如：一家区域零售商是否应该推出当日达服务？";
+        researchContext.placeholder =
+            "例如：在沈阳经营20家门店，物流预算有限，尚无自建配送团队";
+    }
+});
 
 checkBackend();
