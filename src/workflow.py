@@ -13,7 +13,7 @@ from .models import (
     ResearchResponse,
 )
 from .search_tool import search_web
-from .reviewer import review_evidence
+from .reviewer import prepare_evidence, review_evidence
 from .synthesizer import synthesize_decision
 
 load_dotenv()
@@ -220,6 +220,7 @@ async def run_research(
 
         evidence.append(result)
 
+    reviewed_sources = prepare_evidence(evidence)
     assessments = await review_evidence(evidence)
 
     brief = await synthesize_decision(
@@ -235,5 +236,6 @@ async def run_research(
         plan=plan,
         evidence=evidence,
         assessments=assessments,
+        reviewed_sources=reviewed_sources,
         brief=brief,
     )
