@@ -47,6 +47,32 @@ python -m scripts.smoke_test_industry
 需人工继续核对引用内容、数值计算、发布日期、统计口径，
 完成后才考虑合并并发布Beta版本。
 
+## 中国大陆使用：选择阿里云百炼（实验性支持）
+
+Groq API 在部分网络出口可能返回 `403 Forbidden`。该状态也可能由账户或服务限制引起，
+不能仅凭403认定是地区原因。为降低对海外模型接口的依赖，本开发分支支持选择
+**阿里云百炼（Bailian / DashScope）** 的北京地域 OpenAI 兼容接口。
+
+1. 安装新增依赖：`python -m pip install -r requirements.txt`
+2. 打开本地 `.env`（如已有则不要覆盖），添加或修改：
+
+```dotenv
+LLM_PROVIDER=bailian
+DASHSCOPE_API_KEY=你在阿里云百炼控制台申请的真实密钥
+DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen-plus
+TAVILY_API_KEY=你已有的Tavily密钥
+```
+
+3. 运行 `python -m unittest discover -s tests -v` 进行无网络测试，
+然后运行 `python -m scripts.smoke_test_industry` 进行真实API测试。
+**不要将密钥发送给其他人或提交到GitHub。**
+
+此版本仅替换了语言模型服务，**网页检索与摘录仍由 Tavily 处理**，
+因此尚不能保证在中国大陆无需VPN即可稳定运行整套系统。
+需要另行接入在境内可用的检索服务并验证部署位置。
+建议先单独验证模型，再进行完整链路测试。模型调用可能产生费用。
+
 ## 在线演示
 
 [打开在线应用](https://business-research-decision-agent.vercel.app)
