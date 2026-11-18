@@ -188,55 +188,31 @@ function getSafeUrl(value) {
 }
 
 
-function prepareReviewedSources(
-    evidenceBundles = [],
-    assessments = []
-) {
-    const preparedSources = [];
-    let sourceNumber = 1;
-
-    evidenceBundles.forEach((bundle) => {
-        const rankedRecords = [
-            ...(bundle.records || []),
-        ].sort(
-            (first, second) =>
-                second.relevance_score
-                - first.relevance_score
-        );
-
-        const record = rankedRecords[0];
-
-        if (!record) {
-            return;
-        }
-
-        const sourceId = `S${sourceNumber}`;
-        const assessment = assessments.find(
-            (item) => item.source_id === sourceId
-        );
-
-        preparedSources.push({
-            sourceId,
-            query: bundle.query,
-            record,
-            assessment,
-        });
-
-        sourceNumber += 1;
-    });
-
-    return preparedSources;
+function prepareReviewedSources(reviewedSources = [], assessments = []) {
+    // IDs, URLs and selection order are produced by the backend.
+    // Do not independently reconstruct S1/S2 from search results.
+    const assessmentsById = new Map(
+        assessments.map((item) => [item.source_id, item])
+    );
+    return reviewedSources.map((source) => ({
+        sourceId: source.source_id,
+        query: source.query,
+        record: {
+            title: source.title,
+            url: source.url,
+        },
+        assessment: assessmentsById.get(source.source_id),
+    }));
 }
 
-
 function renderEvidence(
-    evidenceBundles,
+    reviewedSources,
     assessments
 ) {
     evidenceOutput.replaceChildren();
 
     const sources = prepareReviewedSources(
-        evidenceBundles,
+        reviewedSources,
         assessments
     );
 
@@ -573,7 +549,7 @@ form.addEventListener("submit", async (event) => {
         renderPlan(data.plan);
 
         const sourceLookup = renderEvidence(
-            data.evidence || [],
+            data.reviewed_sources || [],
             data.assessments || []
         );
 
