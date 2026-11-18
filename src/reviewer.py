@@ -5,8 +5,12 @@ import re
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from dotenv import load_dotenv
-from groq import AsyncGroq
 
+from .llm_provider import (
+    create_llm_client,
+    completion_options,
+    has_llm_credentials,
+)
 from .models import (
     EvidenceAssessment,
     EvidenceBundle,
@@ -16,8 +20,6 @@ from .models import (
 
 
 load_dotenv()
-
-MODEL_ID = "openai/gpt-oss-20b"
 
 
 def canonical_source_url(url: str) -> str:
@@ -232,11 +234,13 @@ def build_fallback_assessments(
 
 
 async def review_single_source(
-    client: AsyncGroq,
+    client,
     source: dict,
     semaphore: asyncio.Semaphore,
 ) -> EvidenceAssessment:
     source_id = str(source["source_id"])
+    from .llm_provider import get_model_name
+    model_id = get_model_name()
 
     source_json = json.dumps(
         source,
@@ -248,7 +252,7 @@ async def review_single_source(
         async with semaphore:
             response = await (
                 client.chat.completions.create(
-                    model=MODEL_ID,
+                    model=model_id,
                     messages=[
                         {
                             "role": "system",
@@ -281,9 +285,7 @@ async def review_single_source(
                     response_format={
                         "type": "json_object",
                     },
-                    temperature=0.1,
-                    reasoning_effort="low",
-                    max_completion_tokens=900,
+                    **completion_options(max_tokens=900),
                 )
             )
 
@@ -326,19 +328,11 @@ async def review_evidence(
     if not prepared_sources:
         return []
 
-    api_key = os.getenv("GROQ_API_KEY")
+    if not has_llm_credentials():
+        print("Evidence reviewer fallback: configured LLM key missing.")
+        return build_fallback_assessments(prepared_sources)
 
-    if not api_key:
-        print(
-            "Evidence reviewer fallback: "
-            "GROQ_API_KEY was not found."
-        )
-
-        return build_fallback_assessments(
-            prepared_sources
-        )
-
-    client = AsyncGroq(api_key=api_key)
+    client, _ = create_llm_client()
 
     # 最多同时审查两条，兼顾速度和免费 API 限制。
     semaphore = asyncio.Semaphore(2)
