@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 import re
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from dotenv import load_dotenv
 from groq import AsyncGroq
@@ -20,35 +20,57 @@ load_dotenv()
 MODEL_ID = "openai/gpt-oss-20b"
 
 
+def canonical_source_url(url: str) -> str:
+    """Deduplicate tracking variants of a URL; preserve substantive queries."""
+    parsed = urlparse(url.strip())
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc:
+        return ""
+    keep = [
+        (key, value)
+        for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+        if not key.lower().startswith("utm_")
+        and key.lower() not in {"fbclid", "gclid"}
+    ]
+    path = parsed.path.rstrip("/") or "/"
+    return urlunparse((
+        parsed.scheme.lower(), parsed.netloc.lower(), path,
+        "", urlencode(sorted(keep)), "",
+    ))
+
+
 def prepare_evidence(
     evidence_bundles: list[EvidenceBundle],
+    max_sources: int = 10,
+    per_query: int = 2,
 ) -> list[dict]:
+    """Select distinct sources once and give them stable IDs for UI/citations."""
     prepared_sources = []
-    source_number = 1
-
+    seen_urls: set[str] = set()
     for bundle in evidence_bundles:
+        selected_count = 0
         ranked_records = sorted(
             bundle.records,
             key=lambda record: record.relevance_score,
             reverse=True,
         )
-
-        # 每个检索词只保留相关性最高的一条结果。
-        for record in ranked_records[:1]:
-            prepared_sources.append(
-                {
-                    "source_id": f"S{source_number}",
-                    "query": bundle.query,
-                    "title": record.title,
-                    "url": record.url,
-                    "excerpt": record.excerpt[:600],
-                    "search_relevance_score": (
-                        record.relevance_score
-                    ),
-                }
-            )
-            source_number += 1
-
+        for record in ranked_records:
+            key = canonical_source_url(record.url)
+            if not key or key in seen_urls:
+                continue
+            if selected_count >= per_query or len(prepared_sources) >= max_sources:
+                break
+            seen_urls.add(key)
+            selected_count += 1
+            prepared_sources.append({
+                "source_id": f"S{len(prepared_sources) + 1}",
+                "query": bundle.query,
+                "title": record.title,
+                "url": record.url,
+                "excerpt": record.excerpt[:600],
+                "search_relevance_score": record.relevance_score,
+            })
+        if len(prepared_sources) >= max_sources:
+            break
     return prepared_sources
 
 
