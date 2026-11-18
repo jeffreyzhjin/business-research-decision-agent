@@ -3,7 +3,6 @@ import json
 import os
 
 from dotenv import load_dotenv
-from groq import AsyncGroq
 from pydantic import BaseModel, ConfigDict, Field
 
 from .models import (
@@ -12,14 +11,13 @@ from .models import (
     ResearchRequest,
     ResearchResponse,
 )
+from .llm_provider import create_llm_client, get_provider
 from .search_tool import search_web
 from .source_enrichment import enrich_evidence
 from .reviewer import prepare_evidence, review_evidence
 from .synthesizer import synthesize_decision
 
 load_dotenv()
-
-MODEL_ID = "openai/gpt-oss-20b"
 
 
 class PlannerOutput(BaseModel):
@@ -102,14 +100,7 @@ def build_planner_prompt(request: ResearchRequest) -> str:
 async def create_research_plan(
     request: ResearchRequest,
 ) -> ResearchResponse:
-    api_key = os.getenv("GROQ_API_KEY")
-
-    if not api_key:
-        raise RuntimeError(
-            "未找到 GROQ_API_KEY，请检查环境变量配置。"
-        )
-
-    client = AsyncGroq(api_key=api_key)
+    client, model_id = create_llm_client()
 
     if request.mode == "industry":
         system_prompt = (
@@ -130,8 +121,20 @@ async def create_research_plan(
             "清晰的简体中文。"
         )
 
+    if get_provider() == "bailian":
+        response_format = {"type": "json_object"}
+    else:
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "research_plan",
+                "strict": True,
+                "schema": PlannerOutput.model_json_schema(),
+            },
+        }
+
     response = await client.chat.completions.create(
-        model=MODEL_ID,
+        model=model_id,
         messages=[
             {
                 "role": "system",
@@ -139,17 +142,16 @@ async def create_research_plan(
             },
             {
                 "role": "user",
-                "content": build_planner_prompt(request),
+                "content": (
+                    build_planner_prompt(request)
+                    + "\n严格返回一个JSON对象，只包含subquestions、"
+                    "search_queries、success_criteria三个字段，"
+                    "分别为4-6、4-6、3-5个字符串组成的数组。"
+                    "不要Markdown代码块，不要额外说明。"
+                ),
             },
         ],
-        response_format={
-            "type": "json_schema",
-            "json_schema": {
-                "name": "research_plan",
-                "strict": True,
-                "schema": PlannerOutput.model_json_schema(),
-            },
-        },
+        response_format=response_format,
     )
 
     content = response.choices[0].message.content
