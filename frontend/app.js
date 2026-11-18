@@ -200,6 +200,8 @@ function prepareReviewedSources(reviewedSources = [], assessments = []) {
         record: {
             title: source.title,
             url: source.url,
+            content_origin: source.content_origin || "search_snippet",
+            published_date: source.published_date || null,
         },
         assessment: assessmentsById.get(source.source_id),
     }));
@@ -300,6 +302,23 @@ function renderEvidence(
                 )
             );
         }
+
+        tags.append(
+            createTag(
+                "证据内容",
+                record.content_origin === "page_excerpt"
+                    ? "页面摘录（未全文核验）"
+                    : "检索摘要（未核验）",
+                "neutral-tag"
+            )
+        );
+        tags.append(
+            createTag(
+                "发布日期",
+                record.published_date || "未核实",
+                "neutral-tag"
+            )
+        );
 
         const queryText = document.createElement("p");
         queryText.className = "evidence-query";
