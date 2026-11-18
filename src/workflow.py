@@ -41,6 +41,34 @@ class PlannerOutput(BaseModel):
 def build_planner_prompt(request: ResearchRequest) -> str:
     context = request.context or "未提供补充背景。"
 
+    if request.mode == "industry":
+        return f"""
+行业研究主题：
+{request.question}
+
+补充背景和研究范围：
+{context}
+
+研究关注周期：
+{request.horizon}
+
+为行业研究制定有层次、可复核的研究计划，暂时不要给出结论。
+不得虚构事实、数字、公司、监管要求或来源。
+研究子问题和成功标准均使用简体中文。
+恰好生成6个简洁的网页检索词，分别覆盖：
+- 政府或行业主管部门公布的政策与产业定义；
+- 行业规模、近年变化及驱动因素；
+- 产业链、关键环节和商业模式；
+- 代表企业、竞争格局和可比案例；
+- 收入来源、成本结构或盈利逻辑；
+- 主要风险、制约因素和发展趋势。
+
+不强制本地市场检索。优先考虑政府、监管机构、交易所、
+上市公司公告及学术机构等可核验的一手来源。
+避免检索词过窄；需要时使用英文检索。
+注意区分事实、推断和待核验事项。
+""".strip()
+
     return f"""
 决策问题：
 {request.question}
@@ -82,19 +110,31 @@ async def create_research_plan(
 
     client = AsyncGroq(api_key=api_key)
 
+    if request.mode == "industry":
+        system_prompt = (
+            "你是基于证据的行业研究助手。"
+            "将研究主题拆分成具体可核验的问题，覆盖行业定义、"
+            "规模、产业链、商业模式、竞争格局与风险。"
+            "成功标准描述研究报告应具备的证据和内容，"
+            "不能将尚未验证的预测或假设表述为事实。"
+            "所有解释均使用自然、清晰的简体中文。"
+        )
+    else:
+        system_prompt = (
+            "你是基于证据的商业研究助手中的研究规划模块。"
+            "请将商业决策拆分为具体、可研究的子问题，并在相关时"
+            "覆盖客户需求、备选策略、市场证据、运营与财务可行性、"
+            "风险和决策阈值。成功标准必须可观察且与决策直接相关。"
+            "无论用户以何种语言提问，所有解释性内容都使用自然、"
+            "清晰的简体中文。"
+        )
+
     response = await client.chat.completions.create(
         model=MODEL_ID,
         messages=[
             {
                 "role": "system",
-                "content": (
-                    "你是基于证据的商业研究助手中的研究规划模块。"
-                    "请将商业决策拆分为具体、可研究的子问题，并在相关时"
-                    "覆盖客户需求、备选策略、市场证据、运营与财务可行性、"
-                    "风险和决策阈值。成功标准必须可观察且与决策直接相关。"
-                    "无论用户以何种语言提问，所有解释性内容都使用自然、"
-                    "清晰的简体中文。"
-                ),
+                "content": system_prompt,
             },
             {
                 "role": "user",
@@ -129,6 +169,7 @@ async def create_research_plan(
         subquestions=planner_output.subquestions,
         search_queries=planner_output.search_queries,
         success_criteria=planner_output.success_criteria,
+        mode=request.mode,
     )
 
     return ResearchResponse(
