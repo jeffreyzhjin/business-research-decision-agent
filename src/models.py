@@ -85,6 +85,15 @@ class EvidenceAssessment(BaseModel):
     limitations: str
 
 
+class ReviewedSource(BaseModel):
+    source_id: str
+    query: str
+    title: str
+    url: str
+    excerpt: str
+    search_relevance_score: float
+
+
 class CitedFinding(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -114,6 +123,9 @@ class ResearchResponse(BaseModel):
     ]
     plan: ResearchPlan
     evidence: list[EvidenceBundle] = Field(
+        default_factory=list,
+    )
+    reviewed_sources: list[ReviewedSource] = Field(
         default_factory=list,
     )
     assessments: list[EvidenceAssessment] = Field(
