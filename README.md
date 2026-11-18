@@ -64,8 +64,8 @@ LLM_MODEL=qwen-plus
 TAVILY_API_KEY=你已有的Tavily密钥
 ```
 
-3. 运行 `python -m unittest discover -s tests -v` 进行无网络测试，
-然后运行 `python -m scripts.smoke_test_industry` 进行真实API测试。
+3. 先运行 `python -m pip install -r requirements.txt`，再运行 `python -m unittest discover -s tests -v` 进行离线测试。
+4. 执行 `python -m scripts.test_llm_connection` 单独验证模型能否连接，之后执行 `python -m scripts.smoke_test_industry` 进行真实全流程测试。
 **不要将密钥发送给其他人或提交到GitHub。**
 
 此版本仅替换了语言模型服务，**网页检索与摘录仍由 Tavily 处理**，
