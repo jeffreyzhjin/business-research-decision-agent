@@ -2,8 +2,12 @@ import json
 import os
 
 from dotenv import load_dotenv
-from groq import AsyncGroq
 
+from .llm_provider import (
+    create_llm_client,
+    completion_options,
+    has_llm_credentials,
+)
 from .models import (
     CitedFinding,
     DecisionBrief,
@@ -16,8 +20,6 @@ from .reviewer import prepare_evidence
 
 
 load_dotenv()
-
-MODEL_ID = "openai/gpt-oss-20b"
 
 
 def build_fallback_brief(
@@ -118,13 +120,8 @@ async def synthesize_decision(
     if not prepared_sources or not assessments:
         return build_fallback_brief(assessments, mode=request.mode)
 
-    api_key = os.getenv("GROQ_API_KEY")
-
-    if not api_key:
-        print(
-            "Decision synthesizer fallback: "
-            "GROQ_API_KEY was not found."
-        )
+    if not has_llm_credentials():
+        print("Decision synthesizer fallback: configured LLM key missing.")
         return build_fallback_brief(assessments, mode=request.mode)
 
     synthesis_input = {
@@ -147,7 +144,7 @@ async def synthesize_decision(
         indent=2,
     )
 
-    client = AsyncGroq(api_key=api_key)
+    client, model_id = create_llm_client()
 
     if request.mode == "industry":
         system_prompt = (
@@ -179,7 +176,7 @@ async def synthesize_decision(
 
     try:
         response = await client.chat.completions.create(
-            model=MODEL_ID,
+            model=model_id,
             messages=[
                 {
                     "role": "system",
@@ -212,9 +209,7 @@ async def synthesize_decision(
             response_format={
                 "type": "json_object",
             },
-            temperature=0.1,
-            reasoning_effort="low",
-            max_completion_tokens=3000,
+            **completion_options(max_tokens=3000),
         )
 
         content = response.choices[0].message.content
