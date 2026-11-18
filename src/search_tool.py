@@ -63,6 +63,7 @@ async def search_web(
                 excerpt=item.get("content") or "",
                 relevance_score=score_value,
                 query=query,
+                content_origin="search_snippet",
             )
         )
 
