@@ -9,6 +9,12 @@ DecisionHorizon = Literal[
     "3 years",
 ]
 
+ResearchMode = Literal[
+    "decision",
+    "industry",
+]
+
+
 EvidenceLevel = Literal[
     "high",
     "medium",
@@ -39,6 +45,7 @@ class ResearchRequest(BaseModel):
         description="与决策相关的企业或行业背景。",
     )
     horizon: DecisionHorizon = "90 days"
+    mode: ResearchMode = "decision"
 
 
 class ResearchPlan(BaseModel):
@@ -48,6 +55,7 @@ class ResearchPlan(BaseModel):
     subquestions: list[str]
     search_queries: list[str]
     success_criteria: list[str]
+    mode: ResearchMode = "decision"
 
 
 class EvidenceRecord(BaseModel):
