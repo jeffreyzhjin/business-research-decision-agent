@@ -24,6 +24,29 @@
 python -m unittest discover -s tests
 ```
 
+## 测试与发布前验收
+
+无需API密钥的模拟流程测试已加入 `tests/test_pipeline_simulation.py`，
+覆盖行业研究流程、部分检索失败、正文提取失败、全部检索失败，
+以及原有决策模式兼容性；GitHub Actions 自动执行：
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+**真实API验收尚需在配置好本地密钥的环境中执行**（切勿提交密钥）。
+从仓库根目录运行：
+
+```powershell
+python -m scripts.smoke_test_industry
+```
+
+此脚本针对中国商业银行行业运行一次真实研究请求，仅输出来源数量、
+引用编号与阶段状态等元信息，不打印完整报告或密钥；
+检查流程是否成功不等于核实了研究结论。运行可能产生API调用额度消耗。
+需人工继续核对引用内容、数值计算、发布日期、统计口径，
+完成后才考虑合并并发布Beta版本。
+
 ## 在线演示
 
 [打开在线应用](https://business-research-decision-agent.vercel.app)
