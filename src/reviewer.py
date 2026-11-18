@@ -66,7 +66,11 @@ def prepare_evidence(
                 "query": bundle.query,
                 "title": record.title,
                 "url": record.url,
-                "excerpt": record.excerpt[:600],
+                # Preserve a longer excerpt when a page extraction succeeded.
+                # Search snippets remain short to limit unsupported context.
+                "excerpt": record.excerpt[
+                    :1800 if record.content_origin == "page_excerpt" else 600
+                ],
                 "search_relevance_score": record.relevance_score,
                 "content_origin": record.content_origin,
                 "published_date": record.published_date,
