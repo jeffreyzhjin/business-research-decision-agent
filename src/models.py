@@ -67,6 +67,8 @@ class EvidenceRecord(BaseModel):
         le=1.0,
     )
     query: str
+    content_origin: Literal["search_snippet", "page_excerpt"] = "search_snippet"
+    published_date: str | None = None
 
 
 class EvidenceBundle(BaseModel):
@@ -92,6 +94,8 @@ class ReviewedSource(BaseModel):
     url: str
     excerpt: str
     search_relevance_score: float
+    content_origin: Literal["search_snippet", "page_excerpt"] = "search_snippet"
+    published_date: str | None = None
 
 
 class CitedFinding(BaseModel):
