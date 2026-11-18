@@ -42,7 +42,7 @@ def has_llm_credentials() -> bool:
 def get_model_name() -> str:
     provider = get_provider()
     default = (
-        "qwen3.8-flash" if provider == "bailian"
+        "qwen-plus" if provider == "bailian"
         else "openai/gpt-oss-20b"
     )
     return os.getenv("LLM_MODEL", "").strip() or default
