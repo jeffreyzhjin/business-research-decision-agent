@@ -104,6 +104,8 @@ class PipelineSimulationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             result.reviewed_sources[0].content_origin, "page_excerpt"
         )
+        self.assertGreater(len(result.reviewed_sources[0].excerpt), 600)
+        self.assertLessEqual(len(result.reviewed_sources[0].excerpt), 1800)
         self.assertIsNone(result.reviewed_sources[0].published_date)
         self.assertEqual(
             [a.source_id for a in result.assessments], ["S1", "S2", "S3"]
