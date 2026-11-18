@@ -13,6 +13,7 @@ from .models import (
     ResearchResponse,
 )
 from .search_tool import search_web
+from .source_enrichment import enrich_evidence
 from .reviewer import prepare_evidence, review_evidence
 from .synthesizer import synthesize_decision
 
@@ -221,6 +222,9 @@ async def run_research(
         evidence.append(result)
 
     reviewed_sources = prepare_evidence(evidence)
+    if request.mode == "industry":
+        evidence = await enrich_evidence(evidence)
+
     assessments = await review_evidence(evidence)
 
     brief = await synthesize_decision(
