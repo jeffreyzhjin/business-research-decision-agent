@@ -9,14 +9,18 @@ import asyncio
 import os
 import sys
 
+from dotenv import load_dotenv
+from src.llm_provider import get_provider, has_llm_credentials
 from src.models import ResearchRequest
 from src.workflow import run_research
 
 
 async def main() -> int:
-    if not os.getenv("GROQ_API_KEY") or not os.getenv("TAVILY_API_KEY"):
-        print("SKIP: configure GROQ_API_KEY and TAVILY_API_KEY locally first.")
+    load_dotenv()
+    if not has_llm_credentials() or not os.getenv("TAVILY_API_KEY"):
+        print("SKIP: configure the selected LLM provider and Tavily keys.")
         return 2
+    print(f"LLM provider: {get_provider()}")
 
     request = ResearchRequest(
         mode="industry",
