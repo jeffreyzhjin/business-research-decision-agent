@@ -22,6 +22,7 @@ MODEL_ID = "openai/gpt-oss-20b"
 
 def build_fallback_brief(
     assessments: list[EvidenceAssessment],
+    mode: str = "decision",
 ) -> DecisionBrief:
     usable_assessments = [
         assessment
@@ -56,8 +57,13 @@ def build_fallback_brief(
             "当前材料只能作为初步参考。"
         ),
         recommendation=(
-            "暂不作出不可逆决策。建议通过补充一手调研或开展小范围试点，"
-            "验证最关键的假设。"
+            "当前证据不足以形成可靠的行业判断。建议进一步收集"
+            "权威统计、上市公司报告与可比案例，并核对统计口径。"
+            if mode == "industry"
+            else (
+                "暂不作出不可逆决策。建议通过补充一手调研或开展小范围试点，"
+                "验证最关键的假设。"
+            )
         ),
         confidence="low",
         key_findings=key_findings,
@@ -89,7 +95,7 @@ async def synthesize_decision(
     prepared_sources = prepare_evidence(evidence)
 
     if not prepared_sources or not assessments:
-        return build_fallback_brief(assessments)
+        return build_fallback_brief(assessments, mode=request.mode)
 
     api_key = os.getenv("GROQ_API_KEY")
 
@@ -98,7 +104,7 @@ async def synthesize_decision(
             "Decision synthesizer fallback: "
             "GROQ_API_KEY was not found."
         )
-        return build_fallback_brief(assessments)
+        return build_fallback_brief(assessments, mode=request.mode)
 
     synthesis_input = {
         "decision": {
@@ -122,22 +128,38 @@ async def synthesize_decision(
 
     client = AsyncGroq(api_key=api_key)
 
+    if request.mode == "industry":
+        system_prompt = (
+            "你是基于证据的行业研究分析师。"
+            "根据给定证据撰写行业研究简报，涵盖行业现状、"
+            "发展驱动、产业链/商业模式、竞争格局和主要风险。"
+            "recommendation 字段表达综合研究判断，不要强行给投资或市场进入建议。"
+            "alternatives 字段列出值得验证的其他观点或研究假设。"
+            "next_steps 字段列出待补充数据和核验动作。"
+            "不能编造市场规模、增长率、企业财务数据、统计期间或引用。"
+            "区分事实与预测，指出可能存在的统计口径差异。"
+            "每项关键发现必须引用有效 source_id，证据不足时降低置信度。"
+            "所有面向用户的内容均使用自然简体中文，只返回一个有效JSON对象。"
+        )
+    else:
+        system_prompt = (
+            "你是基于证据的商业研究助手中的决策综合模块。"
+            "只能使用给定来源和评估，不得虚构事实、统计数据或引用。"
+            "成功标准只是建议的决策阈值，不是已经成立的事实。"
+            "每项关键发现必须引用一个或多个有效 source_id。"
+            "如果证据薄弱或不完整，必须明确说明并降低置信度。"
+            "所有面向用户的文字，包括摘要、建议、发现、备选方案、"
+            "风险和下一步行动，都必须使用自然、清晰的简体中文。"
+            "只返回一个有效 JSON 对象。"
+        )
+
     try:
         response = await client.chat.completions.create(
             model=MODEL_ID,
             messages=[
                 {
                     "role": "system",
-                    "content": (
-                        "你是基于证据的商业研究助手中的决策综合模块。"
-                        "只能使用给定来源和评估，不得虚构事实、统计数据或引用。"
-                        "成功标准只是建议的决策阈值，不是已经成立的事实。"
-                        "每项关键发现必须引用一个或多个有效 source_id。"
-                        "如果证据薄弱或不完整，必须明确说明并降低置信度。"
-                        "所有面向用户的文字，包括摘要、建议、发现、备选方案、"
-                        "风险和下一步行动，都必须使用自然、清晰的简体中文。"
-                        "只返回一个有效 JSON 对象。"
-                    ),
+                    "content": system_prompt,
                 },
                 {
                     "role": "user",
@@ -211,4 +233,4 @@ async def synthesize_decision(
             "Decision synthesizer fallback activated: "
             f"{error}"
         )
-        return build_fallback_brief(assessments)
+        return build_fallback_brief(assessments, mode=request.mode)
