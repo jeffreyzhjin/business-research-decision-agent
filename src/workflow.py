@@ -221,10 +221,12 @@ async def run_research(
 
         evidence.append(result)
 
-    reviewed_sources = prepare_evidence(evidence)
     if request.mode == "industry":
         evidence = await enrich_evidence(evidence)
 
+    # Extract the final evidence list AFTER enrichment. Otherwise the
+    # frontend could incorrectly label page excerpts as search snippets.
+    reviewed_sources = prepare_evidence(evidence)
     assessments = await review_evidence(evidence)
 
     brief = await synthesize_decision(
