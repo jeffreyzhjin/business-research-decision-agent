@@ -65,6 +65,9 @@ class LlmProviderTests(unittest.TestCase):
             self.assertEqual(options["max_tokens"], 600)
             self.assertNotIn("reasoning_effort", options)
             self.assertNotIn("max_completion_tokens", options)
+            self.assertEqual(
+                options["extra_body"], {"thinking": {"type": "disabled"}}
+            )
 
     def test_deepseek_requires_own_key_not_bailian_key(self):
         with patch.dict(os.environ, {
