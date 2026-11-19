@@ -84,7 +84,17 @@ def create_llm_client():
 
 def completion_options(max_tokens: int) -> dict:
     """Keep Groq-only settings off other providers' endpoints."""
-    if get_provider() in {"bailian", "deepseek"}:
+    if get_provider() == "deepseek":
+        # DeepSeek defaults to high-effort thinking. For short, strict JSON
+        # outputs the reasoning budget can exhaust max_tokens before content.
+        # Disable thinking explicitly for planner/reviewer/synthesizer tasks.
+        # Official OpenAI SDK compatibility: pass "thinking" via extra_body.
+        return {
+            "temperature": 0.1,
+            "max_tokens": max_tokens,
+            "extra_body": {"thinking": {"type": "disabled"}},
+        }
+    if get_provider() == "bailian":
         return {
             "temperature": 0.1,
             "max_tokens": max_tokens,
