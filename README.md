@@ -71,6 +71,12 @@ python -m scripts.test_llm_connection
 python -m scripts.smoke_test_industry
 ```
 
+**关于 DeepSeek Flash 的结构化输出：**当前接口在默认思考模式下，可能把短请求
+的输出 Token 额度主要用于推理，从而返回空的 `message.content`。
+开发分支现对规划、来源评估和简报综合三个JSON任务显式设置
+`thinking.type=disabled`；这仅针对DeepSeek，不影响其他模型提供商。
+模型连接通过后，还需要完成一次真实全流程验收，不能只凭离线测试认定修复完成。
+
 模型联通只验证 DeepSeek API，完整研究还需要 Tavily。
 两项测试会实际调用服务并消耗相应额度。正式部署前要检查报告引用与事实准确性。
 官方模型名为 `deepseek-flash`，不要沿用已经弃用的老模型别名。
