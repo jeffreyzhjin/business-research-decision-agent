@@ -11,7 +11,7 @@ from .models import (
     ResearchRequest,
     ResearchResponse,
 )
-from .llm_provider import create_llm_client, get_provider
+from .llm_provider import create_llm_client, get_provider, completion_options
 from .search_tool import search_web
 from .source_enrichment import enrich_evidence
 from .reviewer import prepare_evidence, review_evidence
@@ -152,6 +152,7 @@ async def create_research_plan(
             },
         ],
         response_format=response_format,
+        **completion_options(max_tokens=2200),
     )
 
     content = response.choices[0].message.content
