@@ -49,6 +49,32 @@ class LlmProviderTests(unittest.TestCase):
             self.assertEqual(opts["max_tokens"], 500)
             self.assertNotIn("reasoning_effort", opts)
 
+    def test_deepseek_provider_uses_flash_and_standard_options(self):
+        with patch.dict(os.environ, {
+            "LLM_PROVIDER": "deepseek",
+            "DEEPSEEK_API_KEY": "testing-only-key",
+            "DEEPSEEK_BASE_URL": "https://api.deepseek.com",
+            "LLM_MODEL": "",
+        }):
+            self.assertEqual(get_api_key(), "testing-only-key")
+            client, model = create_llm_client()
+            self.assertIsInstance(client, AsyncOpenAI)
+            self.assertEqual(model, "deepseek-flash")
+            self.assertEqual(str(client.base_url), "https://api.deepseek.com/")
+            options = completion_options(600)
+            self.assertEqual(options["max_tokens"], 600)
+            self.assertNotIn("reasoning_effort", options)
+            self.assertNotIn("max_completion_tokens", options)
+
+    def test_deepseek_requires_own_key_not_bailian_key(self):
+        with patch.dict(os.environ, {
+            "LLM_PROVIDER": "deepseek",
+            "DEEPSEEK_API_KEY": "",
+            "DASHSCOPE_API_KEY": "other-provider-key",
+        }):
+            with self.assertRaisesRegex(RuntimeError, "DEEPSEEK_API_KEY"):
+                create_llm_client()
+
     def test_missing_selected_key(self):
         with patch.dict(os.environ, {
             "LLM_PROVIDER": "bailian",
