@@ -27,8 +27,17 @@ async def main():
         )
     except Exception as exc:
         status = getattr(exc, "status_code", None)
+        payload = getattr(exc, "body", None)
+        details = payload if isinstance(payload, dict) else {}
+        if isinstance(details.get("error"), dict):
+            details = details["error"]
+        code = details.get("code", "unknown")
+        # Only report a fixed set of safe diagnostic fields.
         print(f"FAILED: {type(exc).__name__}, HTTP status={status or 'unknown'}")
-        print("Check provider region, account access, model availability and key.")
+        print(f"Provider error code: {str(code)[:120]}")
+        # Avoid echoing response bodies, credentials, or request headers.
+        print("Read Model Studio error-code docs for the reported code.")
+        print("Check API Key model scope, workspace, service activation, billing and region.")
         return 1
     if not response.choices or not response.choices[0].message.content:
         print("FAILED: empty response")
