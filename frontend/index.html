@@ -46,8 +46,16 @@
             </div>
 
             <form id="research-form">
+                <label for="mode">
+                    研究模式
+                </label>
+                <select id="mode" name="mode">
+                    <option value="industry">行业研究（推荐）</option>
+                    <option value="decision">商业决策</option>
+                </select>
+
                 <label for="question">
-                    研究问题
+                    研究主题或问题
                 </label>
 
                 <textarea
@@ -55,7 +63,7 @@
                     name="question"
                     rows="5"
                     required
-                    placeholder="例如：一家区域零售商是否应该推出当日达服务？"
+                    placeholder="例如：中国商业银行行业的主要盈利模式、竞争格局与发展风险是什么？"
                 ></textarea>
 
                 <label for="context">
@@ -66,11 +74,11 @@
                     id="context"
                     name="context"
                     type="text"
-                    placeholder="例如：在沈阳经营20家门店，物流预算有限，尚无自建配送团队"
+                    placeholder="例如：关注中国市场，重点了解行业结构、代表企业和商业模式"
                 >
 
                 <label for="horizon">
-                    决策周期
+                    研究关注周期
                 </label>
 
                 <select id="horizon" name="horizon">
@@ -251,7 +259,7 @@
             <div class="result-heading">
                 <div>
                     <p class="step-label">步骤 04</p>
-                    <h2>决策简报</h2>
+                    <h2 id="brief-title">决策简报</h2>
                 </div>
 
                 <span
@@ -275,7 +283,7 @@
             </div>
 
             <div class="brief-section">
-                <h3>有证据支持的发现</h3>
+                <h3>有证据支持的发现（请核验原文）</h3>
                 <ol
                     id="findings-output"
                     class="findings-list"

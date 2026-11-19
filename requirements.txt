@@ -3,3 +3,4 @@ uvicorn[standard]
 groq
 python-dotenv
 tavily-python
+openai>=1.50

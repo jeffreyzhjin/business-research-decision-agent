@@ -2,6 +2,111 @@
 
 一个基于可追溯证据的商业研究与决策支持应用。用户输入开放式商业问题后，系统会生成结构化研究计划、检索外部证据、评估来源质量，并输出带来源编号的中文决策简报。
 
+## 新增：行业研究模式（开发分支 Beta）
+
+本分支新增「行业研究」与「商业决策」两种研究模式。行业研究聚焦行业定义、
+发展驱动、产业链、竞争格局、收入与成本逻辑以及风险，不再强制检索本地市场。
+商业决策模式仍保留原来的问题拆解与建议生成流程。
+
+**使用方法：**在首页选择「行业研究（推荐）」，输入例如
+“中国商业银行行业的主要盈利模式、竞争格局与风险是什么？”
+以及适当的研究范围，点击「开始研究」。
+
+**注意：**行业研究模式会尝试通过 Tavily Extract 对最多4个选中来源提取网页正文片段（最多2200字符），
+不可用时自动保留检索摘要；每个检索词最多选取2条来源、整体最多10条，重复URL将被去重并由后端统一编号。
+前端标明证据来自搜索摘要或页面摘录，发布日期没有核实则显示“未核实”。
+**页面摘录不等于全文核验**：当前尚未支持PDF逐页定位、文内出处核对、统计口径自动验证和跨来源事实交叉核验。
+生成报告应视为研究草稿，财务数据、行业规模、政策细节必须复核原始资料，
+不得用于直接投资决策。
+
+本地回归测试：
+```powershell
+python -m unittest discover -s tests
+```
+
+## 测试与发布前验收
+
+无需API密钥的模拟流程测试已加入 `tests/test_pipeline_simulation.py`，
+覆盖行业研究流程、部分检索失败、正文提取失败、全部检索失败，
+以及原有决策模式兼容性；GitHub Actions 自动执行：
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+**真实API验收尚需在配置好本地密钥的环境中执行**（切勿提交密钥）。
+从仓库根目录运行：
+
+```powershell
+python -m scripts.smoke_test_industry
+```
+
+此脚本针对中国商业银行行业运行一次真实研究请求，仅输出来源数量、
+引用编号与阶段状态等元信息，不打印完整报告或密钥；
+检查流程是否成功不等于核实了研究结论。运行可能产生API调用额度消耗。
+需人工继续核对引用内容、数值计算、发布日期、统计口径，
+完成后才考虑合并并发布Beta版本。
+
+## DeepSeek API 配置（当前推荐）
+
+此分支已支持 DeepSeek 官方 OpenAI 兼容接口。用户充值后需另外在
+[DeepSeek 开放平台](https://platform.deepseek.com/)创建 API Key，
+在原有本地 `.env` 中新增或修改以下配置（不要复制真实密钥到聊天或 GitHub）：
+
+```dotenv
+LLM_PROVIDER=deepseek
+DEEPSEEK_API_KEY=填入你自己创建的密钥
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-flash
+TAVILY_API_KEY=保留现有有效检索密钥
+```
+
+从开发分支拉取并安装依赖后，先单独测试模型连接，再验证完整流程：
+
+```powershell
+git pull --ff-only origin feat/industry-research-mode-v1
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
+python -m scripts.test_llm_connection
+python -m scripts.smoke_test_industry
+```
+
+**关于 DeepSeek Flash 的结构化输出：**当前接口在默认思考模式下，可能把短请求
+的输出 Token 额度主要用于推理，从而返回空的 `message.content`。
+开发分支现对规划、来源评估和简报综合三个JSON任务显式设置
+`thinking.type=disabled`；这仅针对DeepSeek，不影响其他模型提供商。
+模型连接通过后，还需要完成一次真实全流程验收，不能只凭离线测试认定修复完成。
+
+模型联通只验证 DeepSeek API，完整研究还需要 Tavily。
+两项测试会实际调用服务并消耗相应额度。正式部署前要检查报告引用与事实准确性。
+官方模型名为 `deepseek-flash`，不要沿用已经弃用的老模型别名。
+
+## 中国大陆使用：选择阿里云百炼（实验性支持）
+
+Groq API 在部分网络出口可能返回 `403 Forbidden`。该状态也可能由账户或服务限制引起，
+不能仅凭403认定是地区原因。为降低对海外模型接口的依赖，本开发分支支持选择
+**阿里云百炼（Bailian / DashScope）** 的北京地域 OpenAI 兼容接口。
+
+1. 安装新增依赖：`python -m pip install -r requirements.txt`
+2. 打开本地 `.env`（如已有则不要覆盖），添加或修改：
+
+```dotenv
+LLM_PROVIDER=bailian
+DASHSCOPE_API_KEY=你在阿里云百炼控制台申请的真实密钥
+DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen-plus
+TAVILY_API_KEY=你已有的Tavily密钥
+```
+
+3. 先运行 `python -m pip install -r requirements.txt`，再运行 `python -m unittest discover -s tests -v` 进行离线测试。
+4. 执行 `python -m scripts.test_llm_connection` 单独验证模型能否连接，之后执行 `python -m scripts.smoke_test_industry` 进行真实全流程测试。
+**不要将密钥发送给其他人或提交到GitHub。**
+
+此版本仅替换了语言模型服务，**网页检索与摘录仍由 Tavily 处理**，
+因此尚不能保证在中国大陆无需VPN即可稳定运行整套系统。
+需要另行接入在境内可用的检索服务并验证部署位置。
+建议先单独验证模型，再进行完整链路测试。模型调用可能产生费用。
+
 ## 在线演示
 
 [打开在线应用](https://business-research-decision-agent.vercel.app)
@@ -194,7 +299,7 @@ API 文档：`http://127.0.0.1:8000/docs`
 - 使用 Pydantic 对结构化输出进行严格校验；
 - 禁止 AI 生成的数据模型包含额外字段；
 - 根据相关性分数筛选搜索结果；
-- 对每条证据进行独立评估；
+- 对每条证据进行独立评估，并统一维护前后端引用编号；
 - 单条评估失败时使用规则兜底；
 - 校验决策发现引用的来源编号；
 - 证据不足时降低置信度并采用保守建议。

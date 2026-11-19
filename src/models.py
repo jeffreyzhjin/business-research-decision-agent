@@ -9,6 +9,12 @@ DecisionHorizon = Literal[
     "3 years",
 ]
 
+ResearchMode = Literal[
+    "decision",
+    "industry",
+]
+
+
 EvidenceLevel = Literal[
     "high",
     "medium",
@@ -39,6 +45,7 @@ class ResearchRequest(BaseModel):
         description="与决策相关的企业或行业背景。",
     )
     horizon: DecisionHorizon = "90 days"
+    mode: ResearchMode = "decision"
 
 
 class ResearchPlan(BaseModel):
@@ -48,6 +55,7 @@ class ResearchPlan(BaseModel):
     subquestions: list[str]
     search_queries: list[str]
     success_criteria: list[str]
+    mode: ResearchMode = "decision"
 
 
 class EvidenceRecord(BaseModel):
@@ -59,6 +67,8 @@ class EvidenceRecord(BaseModel):
         le=1.0,
     )
     query: str
+    content_origin: Literal["search_snippet", "page_excerpt"] = "search_snippet"
+    published_date: str | None = None
 
 
 class EvidenceBundle(BaseModel):
@@ -75,6 +85,17 @@ class EvidenceAssessment(BaseModel):
     relevance: EvidenceLevel
     key_claim: str
     limitations: str
+
+
+class ReviewedSource(BaseModel):
+    source_id: str
+    query: str
+    title: str
+    url: str
+    excerpt: str
+    search_relevance_score: float
+    content_origin: Literal["search_snippet", "page_excerpt"] = "search_snippet"
+    published_date: str | None = None
 
 
 class CitedFinding(BaseModel):
@@ -106,6 +127,9 @@ class ResearchResponse(BaseModel):
     ]
     plan: ResearchPlan
     evidence: list[EvidenceBundle] = Field(
+        default_factory=list,
+    )
+    reviewed_sources: list[ReviewedSource] = Field(
         default_factory=list,
     )
     assessments: list[EvidenceAssessment] = Field(

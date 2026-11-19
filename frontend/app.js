@@ -1,4 +1,8 @@
 const form = document.querySelector("#research-form");
+const researchMode = document.querySelector("#mode");
+const researchQuestion = document.querySelector("#question");
+const researchContext = document.querySelector("#context");
+const briefTitle = document.querySelector("#brief-title");
 const runButton = document.querySelector("#run-button");
 const runMessage = document.querySelector("#run-message");
 
@@ -130,6 +134,12 @@ function renderPlan(plan) {
         translations.horizon[plan.horizon]
         || plan.horizon;
 
+    briefTitle.textContent =
+        plan.mode === "industry" ? "行业研究简报" : "决策简报";
+
+    document.querySelector(".recommendation-label").textContent =
+        plan.mode === "industry" ? "综合研究判断" : "建议";
+
     renderList(
         subquestionsOutput,
         plan.subquestions
@@ -178,55 +188,33 @@ function getSafeUrl(value) {
 }
 
 
-function prepareReviewedSources(
-    evidenceBundles = [],
-    assessments = []
-) {
-    const preparedSources = [];
-    let sourceNumber = 1;
-
-    evidenceBundles.forEach((bundle) => {
-        const rankedRecords = [
-            ...(bundle.records || []),
-        ].sort(
-            (first, second) =>
-                second.relevance_score
-                - first.relevance_score
-        );
-
-        const record = rankedRecords[0];
-
-        if (!record) {
-            return;
-        }
-
-        const sourceId = `S${sourceNumber}`;
-        const assessment = assessments.find(
-            (item) => item.source_id === sourceId
-        );
-
-        preparedSources.push({
-            sourceId,
-            query: bundle.query,
-            record,
-            assessment,
-        });
-
-        sourceNumber += 1;
-    });
-
-    return preparedSources;
+function prepareReviewedSources(reviewedSources = [], assessments = []) {
+    // IDs, URLs and selection order are produced by the backend.
+    // Do not independently reconstruct S1/S2 from search results.
+    const assessmentsById = new Map(
+        assessments.map((item) => [item.source_id, item])
+    );
+    return reviewedSources.map((source) => ({
+        sourceId: source.source_id,
+        query: source.query,
+        record: {
+            title: source.title,
+            url: source.url,
+            content_origin: source.content_origin || "search_snippet",
+            published_date: source.published_date || null,
+        },
+        assessment: assessmentsById.get(source.source_id),
+    }));
 }
 
-
 function renderEvidence(
-    evidenceBundles,
+    reviewedSources,
     assessments
 ) {
     evidenceOutput.replaceChildren();
 
     const sources = prepareReviewedSources(
-        evidenceBundles,
+        reviewedSources,
         assessments
     );
 
@@ -314,6 +302,23 @@ function renderEvidence(
                 )
             );
         }
+
+        tags.append(
+            createTag(
+                "证据内容",
+                record.content_origin === "page_excerpt"
+                    ? "页面摘录（未全文核验）"
+                    : "检索摘要（未核验）",
+                "neutral-tag"
+            )
+        );
+        tags.append(
+            createTag(
+                "发布日期",
+                record.published_date || "未核实",
+                "neutral-tag"
+            )
+        );
 
         const queryText = document.createElement("p");
         queryText.className = "evidence-query";
@@ -482,6 +487,7 @@ form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const requestData = {
+        mode: researchMode.value,
         question: document
             .querySelector("#question")
             .value
@@ -562,7 +568,7 @@ form.addEventListener("submit", async (event) => {
         renderPlan(data.plan);
 
         const sourceLookup = renderEvidence(
-            data.evidence || [],
+            data.reviewed_sources || [],
             data.assessments || []
         );
 
@@ -599,5 +605,19 @@ form.addEventListener("submit", async (event) => {
     }
 });
 
+
+researchMode.addEventListener("change", () => {
+    if (researchMode.value === "industry") {
+        researchQuestion.placeholder =
+            "例如：中国商业银行行业的主要盈利模式、竞争格局与发展风险是什么？";
+        researchContext.placeholder =
+            "例如：关注中国市场，重点了解行业结构、代表企业和商业模式";
+    } else {
+        researchQuestion.placeholder =
+            "例如：一家区域零售商是否应该推出当日达服务？";
+        researchContext.placeholder =
+            "例如：在沈阳经营20家门店，物流预算有限，尚无自建配送团队";
+    }
+});
 
 checkBackend();
