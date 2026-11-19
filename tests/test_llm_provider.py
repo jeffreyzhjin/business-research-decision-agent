@@ -60,7 +60,7 @@ class LlmProviderTests(unittest.TestCase):
             client, model = create_llm_client()
             self.assertIsInstance(client, AsyncOpenAI)
             self.assertEqual(model, "deepseek-flash")
-            self.assertEqual(str(client.base_url), "https://api.deepseek.com/")
+            self.assertEqual(str(client.base_url).rstrip("/"), "https://api.deepseek.com")
             options = completion_options(600)
             self.assertEqual(options["max_tokens"], 600)
             self.assertNotIn("reasoning_effort", options)
