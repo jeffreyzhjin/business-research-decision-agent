@@ -47,6 +47,34 @@ python -m scripts.smoke_test_industry
 需人工继续核对引用内容、数值计算、发布日期、统计口径，
 完成后才考虑合并并发布Beta版本。
 
+## DeepSeek API 配置（当前推荐）
+
+此分支已支持 DeepSeek 官方 OpenAI 兼容接口。用户充值后需另外在
+[DeepSeek 开放平台](https://platform.deepseek.com/)创建 API Key，
+在原有本地 `.env` 中新增或修改以下配置（不要复制真实密钥到聊天或 GitHub）：
+
+```dotenv
+LLM_PROVIDER=deepseek
+DEEPSEEK_API_KEY=填入你自己创建的密钥
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-flash
+TAVILY_API_KEY=保留现有有效检索密钥
+```
+
+从开发分支拉取并安装依赖后，先单独测试模型连接，再验证完整流程：
+
+```powershell
+git pull --ff-only origin feat/industry-research-mode-v1
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
+python -m scripts.test_llm_connection
+python -m scripts.smoke_test_industry
+```
+
+模型联通只验证 DeepSeek API，完整研究还需要 Tavily。
+两项测试会实际调用服务并消耗相应额度。正式部署前要检查报告引用与事实准确性。
+官方模型名为 `deepseek-flash`，不要沿用已经弃用的老模型别名。
+
 ## 中国大陆使用：选择阿里云百炼（实验性支持）
 
 Groq API 在部分网络出口可能返回 `403 Forbidden`。该状态也可能由账户或服务限制引起，
