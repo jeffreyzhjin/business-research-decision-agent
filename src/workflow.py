@@ -121,7 +121,7 @@ async def create_research_plan(
             "清晰的简体中文。"
         )
 
-    if get_provider() == "bailian":
+    if get_provider() in {"bailian", "deepseek"}:
         response_format = {"type": "json_object"}
     else:
         response_format = {
